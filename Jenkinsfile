@@ -1,10 +1,10 @@
 pipeline {
-    agent { label 'agent_build' } // Виконання на агенті з міткою 'build-agent'
+    agent { label 'agent-build' } // Виконання на агенті з міткою 'build-agent'
 
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"
         BRANCH = "main"
-        CREDENTIALS_ID = "agent-ssh-key" // ID SSH-ключа з Jenkins Credentials
+        CREDENTIALS_ID = "jenkins-openproject-cred" // ID SSH-ключа з Jenkins Credentials
     }
 
     stages {
@@ -18,6 +18,41 @@ pipeline {
                             credentialsId: CREDENTIALS_ID
                         ]]
                     ])
+                }
+            }
+        }
+
+        stage('Verify Files') {
+            steps {
+                script {
+                    sh """
+                        echo '📂 Перевіряємо файли у репозиторії:'
+                        ls -la
+                    """
+                }
+            }
+        }
+
+        stage('Run Simple Test') {
+            steps {
+                script {
+                    sh """
+                        echo '✅ Виконуємо тестову команду:'
+                        echo 'Hello, Jenkins Agent!'
+                    """
+                }
+            }
+        }
+
+        stage('Check Environment') {
+            steps {
+                script {
+                    sh """
+                        echo '🖥️ Перевіряємо середовище на агенті:'
+                        uname -a
+                        whoami
+                        pwd
+                    """
                 }
             }
         }

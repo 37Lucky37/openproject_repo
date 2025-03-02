@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'vagrant' } // Виконання на агенті з міткою 'build-agent'
+    agent { label 'agent_build' } // Виконання на агенті з міткою 'build-agent'
 
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"

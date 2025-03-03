@@ -31,6 +31,11 @@ pipeline {
             steps {
                 script {
                     sh """
+                        echo '📌 Додаємо GPG-ключі для RVM...'
+                        gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB || \
+                        (command curl -sSL https://rvm.io/mpapis.asc | gpg --import - && \
+                        command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -)
+                        
                         echo '⬇️ Встановлюємо RVM...'
                         if [ ! -d "\$HOME/.rvm" ]; then
                             sudo apt update

@@ -44,13 +44,12 @@ pipeline {
                         fi
 
                         echo '⬇️ Завантажуємо середовище RVM...'
-                        export PATH="\$HOME/.rvm/bin:\$PATH"
-                        . \$HOME/.rvm/scripts/rvm
+                        echo 'source \$HOME/.rvm/scripts/rvm' >> ~/.bashrc
 
                         echo '⬇️ Встановлюємо Ruby...'
-                        rvm install 3.4.1
-                        rvm use 3.4.1 --default
-                        ruby -v
+                        /bin/bash --login -c "rvm install 3.4.1"
+                        /bin/bash --login -c "rvm use 3.4.1 --default"
+                        /bin/bash --login -c "ruby -v"
                     """
                 }
             }

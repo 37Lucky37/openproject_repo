@@ -135,7 +135,7 @@ pipeline {
                     sh """
                         echo '📦 Встановлюємо Gem залежності...'
                         cd ${WORKSPACE_DIR}
-                        /bin/bash --login -c "bundle install --deployment"
+                        /bin/bash --login -c "bundle install --without development test"
                     """
                 }
             }

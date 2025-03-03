@@ -26,24 +26,31 @@ pipeline {
             }
         }
 
+        stages {
         stage('Install rbenv and Ruby') {
             steps {
                 script {
                     sh """
                         echo '⬇️ Встановлюємо rbenv...'
-                        git clone https://github.com/rbenv/rbenv.git ~/.rbenv || echo 'rbenv вже існує'
-                        echo 'export PATH="\$HOME/.rbenv/bin:\$PATH"' >> ~/.bashrc
-                        echo 'eval "\$(rbenv init -)"' >> ~/.bashrc
-                        source ~/.bashrc
+                        if [ ! -d "\$HOME/.rbenv" ]; then
+                            git clone https://github.com/rbenv/rbenv.git \$HOME/.rbenv
+                        else
+                            echo '✅ rbenv вже встановлено'
+                        fi
+
+                        echo 'export PATH="\$HOME/.rbenv/bin:\$PATH"' >> \$HOME/.bashrc
+                        echo 'eval "\$(rbenv init -)"' >> \$HOME/.bashrc
 
                         echo '⬇️ Встановлюємо ruby-build...'
-                        mkdir -p ~/.rbenv/plugins
-                        git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build || echo 'ruby-build вже існує'
+                        mkdir -p \$HOME/.rbenv/plugins
+                        if [ ! -d "\$HOME/.rbenv/plugins/ruby-build" ]; then
+                            git clone https://github.com/rbenv/ruby-build.git \$HOME/.rbenv/plugins/ruby-build
+                        else
+                            echo '✅ ruby-build вже встановлено'
+                        fi
 
                         echo '⬇️ Встановлюємо Ruby ${RUBY_VERSION}...'
-                        rbenv install ${RUBY_VERSION} -s
-                        rbenv global ${RUBY_VERSION}
-                        ruby -v
+                        bash -c "source \$HOME/.bashrc && rbenv install ${RUBY_VERSION} -s && rbenv global ${RUBY_VERSION} && ruby -v"
                     """
                 }
             }

@@ -27,32 +27,22 @@ pipeline {
             }
         }
 
-        stage('Install rbenv and Ruby') {
+        stage('Install Ruby using RVM') {
             steps {
                 script {
                     sh """
-                        echo '⬇️ Встановлюємо rbenv...'
-                        if [ ! -d "${RBENV_ROOT}" ]; then
-                            git clone https://github.com/rbenv/rbenv.git ${RBENV_ROOT}
-                            cd ${RBENV_ROOT} && src/configure && make -C src
-                            echo 'export PATH="${RBENV_ROOT}/bin:$PATH"' >> ~/.bashrc
-                            echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+                        echo '⬇️ Встановлюємо RVM...'
+                        if [ ! -d "\$HOME/.rvm" ]; then
+                            sudo apt update
+                            sudo apt install -y curl gpg
+                            curl -sSL https://get.rvm.io | bash -s stable
+                            source \$HOME/.rvm/scripts/rvm
                         fi
 
-                        echo '⬇️ Встановлюємо ruby-build...'
-                        if [ ! -d "${RBENV_ROOT}/plugins/ruby-build" ]; then
-                            git clone https://github.com/rbenv/ruby-build.git ${RBENV_ROOT}/plugins/ruby-build
-                        fi
-
-                        export PATH="${RBENV_ROOT}/bin:$PATH"
-                        eval "$(rbenv init -)"
-
-                        echo '⬇️ Встановлюємо Ruby ${RUBY_VERSION}...'
-                        if ! rbenv versions | grep -q ${RUBY_VERSION}; then
-                            rbenv install ${RUBY_VERSION}
-                        fi
-                        rbenv global ${RUBY_VERSION}
-                        rbenv rehash
+                        echo '⬇️ Встановлюємо Ruby...'
+                        source \$HOME/.rvm/scripts/rvm
+                        rvm install 3.4.1
+                        rvm use 3.4.1 --default
                         ruby -v
                     """
                 }

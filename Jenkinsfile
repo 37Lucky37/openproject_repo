@@ -69,6 +69,20 @@ pipeline {
                 }
             }
         }
+
+        stage('Upgrade Git') {
+            steps {
+                script {
+                    sh """
+                        echo '⬆️ Оновлюємо Git...'
+                        sudo add-apt-repository ppa:git-core/ppa -y
+                        sudo apt update
+                        sudo apt install -y git
+                        git --version
+                    """
+                }
+            }
+        }
       
         stage('Prepare Workspace') {
             steps {
@@ -139,6 +153,7 @@ pipeline {
             }
         }
 
+      
         stage('Run Lefthook Pre-Commit') {
             steps {
                 script {

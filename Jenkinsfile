@@ -10,7 +10,7 @@ pipeline {
         RUBY_VERSION = "3.4.1"
         BUNDLER_VERSION = "2.6.3"
         RBENV_ROOT = "${HOME}/.rbenv"
-        ARTIFACT_NAME = "openproject_build.tar.gz"
+        ARTIFACT_NAME = "openproject_build-2.0.tar.gz"
         DEPLOY_USER = "vagrant" // Юзер на сервері
         DEPLOY_HOST = "192.168.77.104" // IP цільового сервера
         DEPLOY_DIR = "/home/vagrant/ansible/openproject/artifacts" // Куди заливати
@@ -115,36 +115,6 @@ pipeline {
             }
         }
 
-        stage('Build Project & Create Artifact') {
-            steps {
-                script {
-                    sh """
-                        echo '📦 Створюємо білд...'
-                        cd ${WORKSPACE_DIR}
-                        echo '🛑 Перевіряємо відкриті файли...'
-                        lsof +D ${WORKSPACE_DIR} || true
-        
-                        sleep 2
-                        
-                        tar --exclude='.git' --exclude='*.log' --exclude='tmp/*' --exclude='node_modules' --exclude="${WORKSPACE_DIR}/${ARTIFACT_NAME}" -czf /tmp/${ARTIFACT_NAME} .
-                        mv /tmp/${ARTIFACT_NAME} ${WORKSPACE_DIR}/
-                        echo '✅ Білд створено: ${ARTIFACT_NAME}'
-                    """
-                }
-            }
-        }
-
-        stage('Transfer Artifact to Ansible Server') {
-            steps {
-                script {
-                    sh """
-                        echo '📡 Передаємо артефакт на сервер...'
-                        scp -o StrictHostKeyChecking=no ${WORKSPACE_DIR}/${ARTIFACT_NAME} ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/
-                    """
-                }
-            }
-        }
-      
         stage('Install Node.js') {
             steps {
                 script {
@@ -165,7 +135,7 @@ pipeline {
                     sh """
                         echo '📦 Встановлюємо Gem залежності...'
                         cd ${WORKSPACE_DIR}
-                        /bin/bash --login -c "bundle install --without development test"
+                        /bin/bash --login -c "bundle install --without production"
                     """
                 }
             }
@@ -178,7 +148,7 @@ pipeline {
                         echo '📦 Встановлюємо npm залежності...'
                         cd ${WORKSPACE_DIR}
                         if [ -f package.json ]; then
-                            npm install
+                            npm install --only=development
                         else
                             echo '⚠️ package.json не знайдено. Пропускаємо встановлення.'
                         fi
@@ -227,6 +197,45 @@ pipeline {
             }
         }
 
+        stage('Build Project & Create Artifact') {
+            steps {
+                script {
+                    sh """
+                        echo '📦 Створюємо білд...'
+                        cd ${WORKSPACE_DIR}
+                        
+                        echo '🛑 Перевіряємо відкриті файли...'
+                        lsof +D ${WORKSPACE_DIR} || true
+                        sleep 2
+                        
+                        echo '📦 Архівуємо проект, виключаючи зайві файли...'
+                        tar --exclude='.git' \\
+                            --exclude='*.log' \\
+                            --exclude='tmp/*' \\
+                            --exclude='node_modules' \\
+                            --exclude='vendor/bundle' \\
+                            --exclude='coverage' \\
+                            --exclude='log/*' \\
+                            --exclude="${WORKSPACE_DIR}/${ARTIFACT_NAME}" \\
+                            -czf /tmp/${ARTIFACT_NAME} .
+                        
+                        mv /tmp/${ARTIFACT_NAME} ${WORKSPACE_DIR}/
+                        echo '✅ Білд створено: ${ARTIFACT_NAME}'
+                    """
+                }
+            }
+        }
+
+        stage('Transfer Artifact to Ansible Server') {
+            steps {
+                script {
+                    sh """
+                        echo '📡 Передаємо артефакт на сервер...'
+                        scp -o StrictHostKeyChecking=no ${WORKSPACE_DIR}/${ARTIFACT_NAME} ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/
+                    """
+                }
+            }
+        }
       
         stage('Check Environment') {
             steps {

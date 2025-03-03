@@ -54,6 +54,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Install Bundler') {
+            steps {
+                script {
+                    sh """
+                        echo '⬇️ Встановлюємо Bundler ${BUNDLER_VERSION}...'
+                        /bin/bash --login -c "gem install bundler -v ${BUNDLER_VERSION}"
+                        /bin/bash --login -c "bundler -v"
+                    """
+                }
+            }
+        }
       
         stage('Prepare Workspace') {
             steps {

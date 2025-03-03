@@ -121,7 +121,7 @@ pipeline {
                     sh """
                         echo '📦 Створюємо білд...'
                         cd ${WORKSPACE_DIR}
-                        tar --exclude='openproject_build.tar.gz' -czf openproject_build.tar.gz .
+                        tar --exclude='openproject_build.tar.gz' --exclude='.git' -czf openproject_build.tar.gz .
                         echo '✅ Білд створено: ${ARTIFACT_NAME}'
                     """
                 }

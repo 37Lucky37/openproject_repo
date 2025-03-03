@@ -114,7 +114,7 @@ pipeline {
                     sh """
                         echo '📦 Встановлюємо Gem залежності...'
                         cd ${WORKSPACE_DIR}
-                        bundle install --without development test
+                        /bin/bash --login -c "bundle install --without development test"
                     """
                 }
             }
@@ -141,8 +141,8 @@ pipeline {
                 script {
                     sh """
                         echo '✅ Перевіряємо середовище:'
-                        ruby -v
-                        bundler -v
+                        /bin/bash --login -c "ruby -v"
+                        /bin/bash --login -c "bundler -v"
                         node -v
                         npm -v
                     """

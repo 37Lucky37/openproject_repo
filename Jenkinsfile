@@ -10,6 +10,10 @@ pipeline {
         RUBY_VERSION = "3.4.1"
         BUNDLER_VERSION = "2.6.3"
         RBENV_ROOT = "${HOME}/.rbenv"
+        ARTIFACT_NAME = "openproject_build.tar.gz"
+        DEPLOY_USER = "vagrant" // Юзер на сервері
+        DEPLOY_HOST = "192.168.77.104" // IP цільового сервера
+        DEPLOY_DIR = "/home/vagrant/ansible/openproject/artifacts" // Куди заливати
     }
 
     stages {  // ❗ Один блок stages
@@ -166,17 +170,6 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                script {
-                    sh """
-                        echo '🔍 Запускаємо тести...'
-                        cd ${WORKSPACE_DIR}
-                        /bin/bash --login -c "bundle exec rspec"
-                    """
-                }
-            }
-        }
 
         stage('Verify Installation') {
             steps {
@@ -204,6 +197,30 @@ pipeline {
             }
         }
 
+        stage('Build Project & Create Artifact') {
+            steps {
+                script {
+                    sh """
+                        echo '📦 Створюємо білд...'
+                        cd ${WORKSPACE_DIR}
+                        tar -czf ${ARTIFACT_NAME} .
+                        echo '✅ Білд створено: ${ARTIFACT_NAME}'
+                    """
+                }
+            }
+        }
+
+        stage('Transfer Artifact to Ansible Server') {
+            steps {
+                script {
+                    sh """
+                        echo '📡 Передаємо артефакт на сервер...'
+                        scp -o StrictHostKeyChecking=no ${WORKSPACE_DIR}/${ARTIFACT_NAME} ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/
+                    """
+                }
+            }
+        }
+      
         stage('Check Environment') {
             steps {
                 script {

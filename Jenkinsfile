@@ -11,7 +11,7 @@ pipeline {
         BUNDLER_VERSION = "2.6.3"
     }
 
-    stages {
+    stages {  // ❗ Один блок stages
         stage('Install System Dependencies') {
             steps {
                 script {
@@ -26,8 +26,7 @@ pipeline {
             }
         }
 
-        stages {
-        stage('Install rbenv and Ruby') {
+        stage('Install rbenv and Ruby') {  // ❗ Виправлено вкладення
             steps {
                 script {
                     sh """
@@ -56,7 +55,6 @@ pipeline {
             }
         }
 
-        
         stage('Prepare Workspace') {
             steps {
                 script {
@@ -84,8 +82,6 @@ pipeline {
             }
         }
 
-        
-
         stage('Install Node.js') {
             steps {
                 script {
@@ -99,8 +95,6 @@ pipeline {
                 }
             }
         }
-
-        
 
         stage('Install Gem Dependencies') {
             steps {
@@ -167,5 +161,5 @@ pipeline {
                 }
             }
         }
-    }
-}
+    } // ❗ Закриваємо єдиний блок `stages`
+} // ❗ Закриваємо `pipeline`

@@ -35,7 +35,7 @@ pipeline {
                             git clone https://github.com/rbenv/rbenv.git ~/.rbenv
                         fi
                         echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-                        echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+                        sh 'echo \'eval "\\$(rbenv init -)"\' >> ~/.bashrc'
                         source ~/.bashrc
 
                         echo '⬇️ Встановлюємо ruby-build...'

@@ -150,6 +150,52 @@ pipeline {
             }
         }
 
+        stage('Lint Ruby Code (Rubocop)') {
+            steps {
+                script {
+                    sh """
+                        echo '🔍 Виконуємо Rubocop...'
+                        cd ${WORKSPACE_DIR}
+                        /bin/bash --login -c "gem install rubocop"
+                        /bin/bash --login -c "rubocop --format progress || true"
+                    """
+                }
+            }
+        }
+
+        stage('Lint JavaScript Code (ESLint)') {
+            steps {
+                script {
+                    sh """
+                        echo '🔍 Виконуємо ESLint...'
+                        cd ${WORKSPACE_DIR}
+                        if [ -f package.json ]; then
+                            npm install eslint || true
+                            npx eslint . || true
+                        else
+                            echo '⚠️ package.json не знайдено. Пропускаємо ESLint.'
+                        fi
+                    """
+                }
+            }
+        }
+
+        stage('Verify Installation') {
+            steps {
+                script {
+                    sh """
+                        echo '✅ Перевіряємо середовище:'
+                        /bin/bash --login -c "ruby -v"
+                        /bin/bash --login -c "bundler -v"
+                        /bin/bash --login -c "rubocop -v"
+                        node -v
+                        npm -v
+                        npx eslint -v || echo '⚠️ ESLint не знайдено'
+                    """
+                }
+            }
+        }
+
         stage('Run Simple Test') {
             steps {
                 script {

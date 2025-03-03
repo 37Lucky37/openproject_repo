@@ -121,7 +121,14 @@ pipeline {
                     sh """
                         echo '📦 Створюємо білд...'
                         cd ${WORKSPACE_DIR}
-                        tar --exclude='openproject_build.tar.gz' --exclude='.git' -czf openproject_build.tar.gz .
+                        echo '🛑 Перевіряємо відкриті файли...'
+                        lsof +D ${WORKSPACE_DIR} || true
+                        echo '🛑 Закриваємо відкриті файли...'
+                        kill \$(lsof -t +D ${WORKSPACE_DIR}) || true
+                        sleep 2
+                        
+                        tar --exclude='.git' --exclude='*.log' --exclude='tmp/*' --exclude='node_modules' --exclude='${ARTIFACT_NAME}' -czf /tmp/${ARTIFACT_NAME} .
+                        mv /tmp/${ARTIFACT_NAME} ${WORKSPACE_DIR}/
                         echo '✅ Білд створено: ${ARTIFACT_NAME}'
                     """
                 }

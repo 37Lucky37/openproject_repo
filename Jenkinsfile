@@ -26,35 +26,40 @@ pipeline {
             }
         }
 
-        stage('Update ruby-build') {
-            when { environment name: 'BUILD_ENV', value: 'build' }
+        stage('Install rbenv & ruby-build') {
             steps {
                 script {
                     sh """
-                        echo '🔄 Оновлюємо ruby-build...'
-                        if [ -d ~/.rbenv/plugins/ruby-build ]; then
-                            cd ~/.rbenv/plugins/ruby-build && git pull
-                        else
+                        echo '⬇️ Встановлюємо rbenv...'
+                        if [ ! -d "$HOME/.rbenv" ]; then
+                            git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+                        fi
+                        echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
+                        echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+                        source ~/.bashrc
+
+                        echo '⬇️ Встановлюємо ruby-build...'
+                        if [ ! -d "$HOME/.rbenv/plugins/ruby-build" ]; then
                             git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+                        else
+                            cd ~/.rbenv/plugins/ruby-build && git pull
                         fi
                     """
                 }
             }
         }
-      
+
         stage('Install Ruby and Bundler') {
             steps {
                 script {
                     sh """
                         echo '⬇️ Встановлюємо Ruby ${RUBY_VERSION}...'
-                        sudo apt install -y rbenv
                         export PATH="$HOME/.rbenv/bin:$PATH"
-
-                        # Виправлений eval
-                        eval \"\$(rbenv init -)\"
+                        eval "$(rbenv init -)"
 
                         rbenv install ${RUBY_VERSION} -s
                         rbenv global ${RUBY_VERSION}
+                        rbenv rehash
                         ruby -v
 
                         echo '⬇️ Встановлюємо Bundler ${BUNDLER_VERSION}...'

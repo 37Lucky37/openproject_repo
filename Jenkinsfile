@@ -123,11 +123,10 @@ pipeline {
                         cd ${WORKSPACE_DIR}
                         echo '🛑 Перевіряємо відкриті файли...'
                         lsof +D ${WORKSPACE_DIR} || true
-                        echo '🛑 Закриваємо відкриті файли...'
-                        kill \$(lsof -t +D ${WORKSPACE_DIR}) || true
+        
                         sleep 2
                         
-                        tar --exclude='.git' --exclude='*.log' --exclude='tmp/*' --exclude='node_modules' --exclude='${ARTIFACT_NAME}' -czf /tmp/${ARTIFACT_NAME} .
+                        tar --exclude='.git' --exclude='*.log' --exclude='tmp/*' --exclude='node_modules' --exclude="${WORKSPACE_DIR}/${ARTIFACT_NAME}" -czf /tmp/${ARTIFACT_NAME} .
                         mv /tmp/${ARTIFACT_NAME} ${WORKSPACE_DIR}/
                         echo '✅ Білд створено: ${ARTIFACT_NAME}'
                     """

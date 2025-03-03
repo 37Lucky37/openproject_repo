@@ -212,7 +212,6 @@ pipeline {
                         tar --exclude='.git' \\
                             --exclude='*.log' \\
                             --exclude='tmp/*' \\
-                            --exclude='node_modules' \\
                             --exclude='vendor/bundle' \\
                             --exclude='coverage' \\
                             --exclude='log/*' \\

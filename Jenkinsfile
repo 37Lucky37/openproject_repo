@@ -148,7 +148,7 @@ pipeline {
                         echo '📦 Встановлюємо npm залежності...'
                         cd ${WORKSPACE_DIR}
                         if [ -f package.json ]; then
-                            npm install --only=development
+                            npm install
                         else
                             echo '⚠️ package.json не знайдено. Пропускаємо встановлення.'
                         fi

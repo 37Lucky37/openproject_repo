@@ -1,10 +1,10 @@
 pipeline {
-    agent { label 'master-node' } // Виконання на агенті
+    agent { label 'agent-build' } // Виконання на агенті
 
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"
         BRANCH = "main"
-        CREDENTIALS_ID = "jenkins-openproject-cred" // ID SSH-ключа з Jenkins Credentials
+        CREDENTIALS_ID = "agent1-ssh-key" // ID SSH-ключа з Jenkins Credentials
         WORKSPACE_DIR = "${HOME}/openproject" // Директорія для стягування репозиторію
     }
 

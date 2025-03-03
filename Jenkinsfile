@@ -115,6 +115,30 @@ pipeline {
             }
         }
 
+        stage('Build Project & Create Artifact') {
+            steps {
+                script {
+                    sh """
+                        echo '📦 Створюємо білд...'
+                        cd ${WORKSPACE_DIR}
+                        tar -czf ${ARTIFACT_NAME} .
+                        echo '✅ Білд створено: ${ARTIFACT_NAME}'
+                    """
+                }
+            }
+        }
+
+        stage('Transfer Artifact to Ansible Server') {
+            steps {
+                script {
+                    sh """
+                        echo '📡 Передаємо артефакт на сервер...'
+                        scp -o StrictHostKeyChecking=no ${WORKSPACE_DIR}/${ARTIFACT_NAME} ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/
+                    """
+                }
+            }
+        }
+      
         stage('Install Node.js') {
             steps {
                 script {
@@ -197,29 +221,6 @@ pipeline {
             }
         }
 
-        stage('Build Project & Create Artifact') {
-            steps {
-                script {
-                    sh """
-                        echo '📦 Створюємо білд...'
-                        cd ${WORKSPACE_DIR}
-                        tar -czf ${ARTIFACT_NAME} .
-                        echo '✅ Білд створено: ${ARTIFACT_NAME}'
-                    """
-                }
-            }
-        }
-
-        stage('Transfer Artifact to Ansible Server') {
-            steps {
-                script {
-                    sh """
-                        echo '📡 Передаємо артефакт на сервер...'
-                        scp -o StrictHostKeyChecking=no ${WORKSPACE_DIR}/${ARTIFACT_NAME} ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/
-                    """
-                }
-            }
-        }
       
         stage('Check Environment') {
             steps {

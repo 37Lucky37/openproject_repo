@@ -135,7 +135,7 @@ pipeline {
                     sh """
                         echo '📦 Встановлюємо Gem залежності...'
                         cd ${WORKSPACE_DIR}
-                        /bin/bash --login -c "bundle install --without production"
+                        /bin/bash --login -c "bundle install --deployment"
                     """
                 }
             }
@@ -212,7 +212,6 @@ pipeline {
                         tar --exclude='.git' \\
                             --exclude='*.log' \\
                             --exclude='tmp/*' \\
-                            --exclude='vendor/bundle' \\
                             --exclude='coverage' \\
                             --exclude='log/*' \\
                             --exclude="${WORKSPACE_DIR}/${ARTIFACT_NAME}" \\

@@ -9,6 +9,7 @@ pipeline {
         NODE_VERSION = "20.18.3"
         RUBY_VERSION = "3.4.1"
         BUNDLER_VERSION = "2.6.3"
+        RBENV_ROOT = "${HOME}/.rbenv"
     }
 
     stages {  // ❗ Один блок stages
@@ -21,6 +22,38 @@ pipeline {
                           libffi-dev libyaml-dev libgmp-dev zlib1g-dev libssl-dev libreadline-dev \
                           libxml2-dev libxslt1-dev build-essential gcc g++ make libpq-dev memcached \
                           imagemagick libapr1 libaprutil1 libjansson4
+                    """
+                }
+            }
+        }
+
+        stage('Install rbenv and Ruby') {
+            steps {
+                script {
+                    sh """
+                        echo '⬇️ Встановлюємо rbenv...'
+                        if [ ! -d "${RBENV_ROOT}" ]; then
+                            git clone https://github.com/rbenv/rbenv.git ${RBENV_ROOT}
+                            cd ${RBENV_ROOT} && src/configure && make -C src
+                            echo 'export PATH="${RBENV_ROOT}/bin:$PATH"' >> ~/.bashrc
+                            echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+                        fi
+
+                        echo '⬇️ Встановлюємо ruby-build...'
+                        if [ ! -d "${RBENV_ROOT}/plugins/ruby-build" ]; then
+                            git clone https://github.com/rbenv/ruby-build.git ${RBENV_ROOT}/plugins/ruby-build
+                        fi
+
+                        export PATH="${RBENV_ROOT}/bin:$PATH"
+                        eval "$(rbenv init -)"
+
+                        echo '⬇️ Встановлюємо Ruby ${RUBY_VERSION}...'
+                        if ! rbenv versions | grep -q ${RUBY_VERSION}; then
+                            rbenv install ${RUBY_VERSION}
+                        fi
+                        rbenv global ${RUBY_VERSION}
+                        rbenv rehash
+                        ruby -v
                     """
                 }
             }

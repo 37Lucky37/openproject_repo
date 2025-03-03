@@ -26,35 +26,6 @@ pipeline {
             }
         }
 
-        stage('Install rbenv and Ruby') {  // ❗ Виправлено вкладення
-            steps {
-                script {
-                    sh """
-                        echo '⬇️ Встановлюємо rbenv...'
-                        if [ ! -d "\$HOME/.rbenv" ]; then
-                            git clone https://github.com/rbenv/rbenv.git \$HOME/.rbenv
-                        else
-                            echo '✅ rbenv вже встановлено'
-                        fi
-
-                        echo 'export PATH="\$HOME/.rbenv/bin:\$PATH"' >> \$HOME/.bashrc
-                        echo 'eval "\$(rbenv init -)"' >> \$HOME/.bashrc
-
-                        echo '⬇️ Встановлюємо ruby-build...'
-                        mkdir -p \$HOME/.rbenv/plugins
-                        if [ ! -d "\$HOME/.rbenv/plugins/ruby-build" ]; then
-                            git clone https://github.com/rbenv/ruby-build.git \$HOME/.rbenv/plugins/ruby-build
-                        else
-                            echo '✅ ruby-build вже встановлено'
-                        fi
-
-                        echo '⬇️ Встановлюємо Ruby ${RUBY_VERSION}...'
-                        bash -c "source \$HOME/.bashrc && rbenv install ${RUBY_VERSION} -s && rbenv global ${RUBY_VERSION} && ruby -v"
-                    """
-                }
-            }
-        }
-
         stage('Prepare Workspace') {
             steps {
                 script {

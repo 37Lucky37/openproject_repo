@@ -10,7 +10,7 @@ pipeline {
         RUBY_VERSION = "3.4.1"
         BUNDLER_VERSION = "2.6.3"
         RBENV_ROOT = "${HOME}/.rbenv"
-        ARTIFACT_NAME = "openproject_build-4.0.tar.gz"
+        ARTIFACT_NAME = "openproject_build-5.0.tar.gz"
         DEPLOY_USER = "vagrant" // Юзер на сервері
         DEPLOY_HOST = "192.168.77.104" // IP цільового сервера
         DEPLOY_DIR = "/home/vagrant/ansible/openproject/artifacts" // Куди заливати
@@ -214,6 +214,8 @@ pipeline {
                             --exclude='tmp/*' \\
                             --exclude='coverage' \\
                             --exclude='log/*' \\
+                            --exclude='node_modules' \\
+                            --exclude='vendor/bundle' \\
                             --exclude="${WORKSPACE_DIR}/${ARTIFACT_NAME}" \\
                             -czf /tmp/${ARTIFACT_NAME} .
                         

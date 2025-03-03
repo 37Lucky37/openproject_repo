@@ -12,33 +12,6 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Workspace') {
-            steps {
-                script {
-                    sh """
-                        echo '🛠️ Очищаємо робочу директорію...'
-                        rm -rf ${WORKSPACE_DIR}
-                        mkdir -p ${WORKSPACE_DIR}
-                    """
-                }
-            }
-        }
-
-        stage('Clone Repository') {
-            steps {
-                script {
-                    checkout([$class: 'GitSCM',
-                        branches: [[name: "*/${BRANCH}"]],
-                        userRemoteConfigs: [[
-                            url: REPO,
-                            credentialsId: CREDENTIALS_ID
-                        ]],
-                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${WORKSPACE_DIR}"]]
-                    ])
-                }
-            }
-        }
-
         stage('Install System Dependencies') {
             steps {
                 script {
@@ -48,20 +21,6 @@ pipeline {
                           libffi-dev libyaml-dev libgmp-dev zlib1g-dev libssl-dev libreadline-dev \
                           libxml2-dev libxslt1-dev build-essential gcc g++ make libpq-dev memcached \
                           imagemagick libapr1 libaprutil1 libjansson4
-                    """
-                }
-            }
-        }
-
-        stage('Install Node.js') {
-            steps {
-                script {
-                    sh """
-                        echo '⬇️ Встановлюємо Node.js ${NODE_VERSION}...'
-                        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-                        sudo apt install -y nodejs
-                        node -v
-                        npm -v
                     """
                 }
             }
@@ -105,6 +64,52 @@ pipeline {
                 }
             }
         }
+
+        
+        stage('Prepare Workspace') {
+            steps {
+                script {
+                    sh """
+                        echo '🛠️ Очищаємо робочу директорію...'
+                        rm -rf ${WORKSPACE_DIR}
+                        mkdir -p ${WORKSPACE_DIR}
+                    """
+                }
+            }
+        }
+
+        stage('Clone Repository') {
+            steps {
+                script {
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: "*/${BRANCH}"]],
+                        userRemoteConfigs: [[
+                            url: REPO,
+                            credentialsId: CREDENTIALS_ID
+                        ]],
+                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${WORKSPACE_DIR}"]]
+                    ])
+                }
+            }
+        }
+
+        
+
+        stage('Install Node.js') {
+            steps {
+                script {
+                    sh """
+                        echo '⬇️ Встановлюємо Node.js ${NODE_VERSION}...'
+                        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+                        sudo apt install -y nodejs
+                        node -v
+                        npm -v
+                    """
+                }
+            }
+        }
+
+        
 
         stage('Install Gem Dependencies') {
             steps {

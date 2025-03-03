@@ -74,7 +74,10 @@ pipeline {
                         echo '⬇️ Встановлюємо Ruby ${RUBY_VERSION}...'
                         sudo apt install -y rbenv
                         export PATH="$HOME/.rbenv/bin:$PATH"
-                        eval "$(rbenv init -)"
+
+                        # Виправлений eval
+                        eval \"\$(rbenv init -)\"
+
                         rbenv install ${RUBY_VERSION} -s
                         rbenv global ${RUBY_VERSION}
                         ruby -v

@@ -44,7 +44,8 @@ pipeline {
                         fi
 
                         echo '⬇️ Завантажуємо середовище RVM...'
-                        . \$HOME/.rvm/scripts/rvm  # Використовуємо крапку замість source
+                        export PATH="\$HOME/.rvm/bin:\$PATH"
+                        . \$HOME/.rvm/scripts/rvm
 
                         echo '⬇️ Встановлюємо Ruby...'
                         rvm install 3.4.1

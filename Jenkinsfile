@@ -136,20 +136,6 @@ pipeline {
             }
         }
 
-        stage('Verify Installation') {
-            steps {
-                script {
-                    sh """
-                        echo '✅ Перевіряємо середовище:'
-                        /bin/bash --login -c "ruby -v"
-                        /bin/bash --login -c "bundler -v"
-                        node -v
-                        npm -v
-                    """
-                }
-            }
-        }
-
         stage('Lint Ruby Code (Rubocop)') {
             steps {
                 script {

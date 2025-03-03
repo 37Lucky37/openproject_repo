@@ -166,6 +166,18 @@ pipeline {
             }
         }
 
+        stage('Run Tests') {
+            steps {
+                script {
+                    sh """
+                        echo '🔍 Запускаємо тести...'
+                        cd ${WORKSPACE_DIR}
+                        /bin/bash --login -c "bundle exec rspec"
+                    """
+                }
+            }
+        }
+
         stage('Verify Installation') {
             steps {
                 script {

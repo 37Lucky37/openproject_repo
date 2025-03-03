@@ -62,6 +62,9 @@ pipeline {
                         echo '⬇️ Встановлюємо Bundler ${BUNDLER_VERSION}...'
                         /bin/bash --login -c "gem install bundler -v ${BUNDLER_VERSION}"
                         /bin/bash --login -c "bundler -v"
+                        echo '⬇️ Встановлюємо Lefthook...'
+                        /bin/bash --login -c "gem install lefthook"
+                        /bin/bash --login -c "lefthook version"
                     """
                 }
             }

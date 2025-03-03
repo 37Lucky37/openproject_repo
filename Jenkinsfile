@@ -26,45 +26,24 @@ pipeline {
             }
         }
 
-        stage('Install rbenv & ruby-build') {
+        stage('Install rbenv and Ruby') {
             steps {
                 script {
                     sh """
                         echo '⬇️ Встановлюємо rbenv...'
-                        if [ ! -d "$HOME/.rbenv" ]; then
-                            git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-                        fi
-                        echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-                        sh 'echo \'eval "\\$(rbenv init -)"\' >> ~/.bashrc'
+                        git clone https://github.com/rbenv/rbenv.git ~/.rbenv || echo 'rbenv вже існує'
+                        echo 'export PATH="\$HOME/.rbenv/bin:\$PATH"' >> ~/.bashrc
+                        echo 'eval "\$(rbenv init -)"' >> ~/.bashrc
                         source ~/.bashrc
 
                         echo '⬇️ Встановлюємо ruby-build...'
-                        if [ ! -d "$HOME/.rbenv/plugins/ruby-build" ]; then
-                            git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
-                        else
-                            cd ~/.rbenv/plugins/ruby-build && git pull
-                        fi
-                    """
-                }
-            }
-        }
+                        mkdir -p ~/.rbenv/plugins
+                        git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build || echo 'ruby-build вже існує'
 
-        stage('Install Ruby and Bundler') {
-            steps {
-                script {
-                    sh """
                         echo '⬇️ Встановлюємо Ruby ${RUBY_VERSION}...'
-                        export PATH="$HOME/.rbenv/bin:$PATH"
-                        eval "$(rbenv init -)"
-
                         rbenv install ${RUBY_VERSION} -s
                         rbenv global ${RUBY_VERSION}
-                        rbenv rehash
                         ruby -v
-
-                        echo '⬇️ Встановлюємо Bundler ${BUNDLER_VERSION}...'
-                        gem install bundler -v ${BUNDLER_VERSION}
-                        bundler -v
                     """
                 }
             }

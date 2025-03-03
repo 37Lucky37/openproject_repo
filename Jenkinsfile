@@ -4,7 +4,7 @@ pipeline {
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"
         BRANCH = "main"
-        CREDENTIALS_ID = "agent1-ssh-key" // ID SSH-ключа з Jenkins Credentials
+        CREDENTIALS_ID = "jenkins-openproject-cred" // ID SSH-ключа з Jenkins Credentials
         WORKSPACE_DIR = "${HOME}/openproject" // Директорія для стягування репозиторію
         NODE_VERSION = "20.18.3"
         RUBY_VERSION = "3.4.1"

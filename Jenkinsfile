@@ -67,6 +67,22 @@ pipeline {
             }
         }
 
+        stage('Update ruby-build') {
+            when { environment name: 'BUILD_ENV', value: 'build' }
+            steps {
+                script {
+                    sh """
+                        echo '🔄 Оновлюємо ruby-build...'
+                        if [ -d ~/.rbenv/plugins/ruby-build ]; then
+                            cd ~/.rbenv/plugins/ruby-build && git pull
+                        else
+                            git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+                        fi
+                    """
+                }
+            }
+        }
+      
         stage('Install Ruby and Bundler') {
             steps {
                 script {

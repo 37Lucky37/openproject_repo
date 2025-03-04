@@ -135,7 +135,7 @@ pipeline {
                     sh """
                         echo '📦 Встановлюємо Gem залежності...'
                         cd ${WORKSPACE_DIR}
-                        /bin/bash --login -c "bundle install --without development test"
+                        /bin/bash --login -c "bundle install"
                     """
                 }
             }
@@ -197,41 +197,53 @@ pipeline {
             }
         }
 
-        stage('Build Project & Create Artifact') {
+        stage('Run Unit & Integration Tests') {
             steps {
                 script {
                     sh """
-                        echo '📦 Створюємо білд...'
+                        echo '🧪 Запускаємо тести...'
                         cd ${WORKSPACE_DIR}
-                        
-                        echo '🛑 Перевіряємо відкриті файли...'
-                        lsof +D ${WORKSPACE_DIR} || true
-                        sleep 2
-                        
-                        echo '📦 Архівуємо проект, виключаючи зайві файли...'
-                        tar --exclude='.git' \\
-                            --exclude='*.log' \\
-                            --exclude='tmp/*' \\
-                            --exclude='coverage' \\
-                            --exclude='log/*' \\
-                            --exclude='node_modules' \\
-                            --exclude='vendor/bundle' \\
-                            --exclude="${WORKSPACE_DIR}/${ARTIFACT_NAME}" \\
-                            -czf /tmp/${ARTIFACT_NAME} .
-                        
-                        mv /tmp/${ARTIFACT_NAME} ${WORKSPACE_DIR}/
-                        echo '✅ Білд створено: ${ARTIFACT_NAME}'
+                        RAILS_ENV=test /bin/bash --login -c "bundle exec rake db:create db:migrate"
+                        RAILS_ENV=test /bin/bash --login -c "bundle exec rspec"
                     """
                 }
             }
         }
 
-        stage('Transfer Artifact to Ansible Server') {
+        stage('Run Frontend Tests') {
             steps {
                 script {
                     sh """
-                        echo '📡 Передаємо артефакт на сервер...'
-                        scp -o StrictHostKeyChecking=no ${WORKSPACE_DIR}/${ARTIFACT_NAME} ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIR}/
+                        echo '🧪 Запускаємо фронтенд тести...'
+                        cd ${WORKSPACE_DIR}/frontend
+                        npm run test
+                    """
+                }
+            }
+        }
+
+        stage('Run System (End-to-End) Tests') {
+            steps {
+                script {
+                    sh """
+                        echo '🧪 Запускаємо системні тести...'
+                        cd ${WORKSPACE_DIR}
+                        RAILS_ENV=test /bin/bash --login -c "bundle exec rake spec:system"
+                    """
+                }
+            }
+        }
+
+        stage('Run Security & Lint Checks') {
+            steps {
+                script {
+                    sh """
+                        echo '🔎 Виконуємо перевірку безпеки...'
+                        cd ${WORKSPACE_DIR}
+                        /bin/bash --login -c "bundle exec brakeman -A -z"
+
+                        echo '🎨 Запускаємо RuboCop для перевірки стилю коду...'
+                        /bin/bash --login -c "bundle exec rubocop"
                     """
                 }
             }

@@ -87,6 +87,20 @@ pipeline {
                 }
             }
         }
+
+        stage('Install PostgreSQL for Tests') {
+            steps {
+                script {
+                    sh """
+                        echo '📦 Встановлюємо PostgreSQL...'
+                        sudo apt update
+                        sudo apt install -y postgresql postgresql-contrib
+                        sudo systemctl start postgresql
+                        sudo systemctl enable postgresql
+                    """
+                }
+            }
+        }
       
         stage('Prepare Workspace') {
             steps {
@@ -111,6 +125,41 @@ pipeline {
                         ]],
                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${WORKSPACE_DIR}"]]
                     ])
+                }
+            }
+        }
+      
+        stage('Setup Test Database') {
+            steps {
+                script {
+                    sh """
+                        echo '🛠️ Створюємо тестового користувача та базу...'
+                        sudo -u postgres psql -c "CREATE USER test_user WITH PASSWORD 'test_password';"
+                        sudo -u postgres psql -c "CREATE DATABASE openproject_test OWNER test_user;"
+                        sudo -u postgres psql -c "ALTER USER test_user CREATEDB;"
+                    """
+                }
+            }
+        }
+
+        stage('Setup Local Database Configuration') {
+            steps {
+                script {
+                    sh """
+                        echo '🛠 Створюємо config/database.yml для тестів...'
+                        cd ${WORKSPACE_DIR}/config
+                        cat > database.yml <<EOL
+                        test:
+                          adapter: postgresql
+                          encoding: unicode
+                          database: openproject_test
+                          pool: 5
+                          username: test_user
+                          password: test_password
+                          host: localhost
+                          port: 5432
+                        EOL
+                    """
                 }
             }
         }
@@ -157,6 +206,17 @@ pipeline {
             }
         }
 
+        stage('Run Database Migrations') {
+            steps {
+                script {
+                    sh """
+                        echo '📂 Запускаємо міграції для тестової БД...'
+                        cd ${WORKSPACE_DIR}
+                        RAILS_ENV=test /bin/bash --login -c "bundle exec rake db:migrate"
+                    """
+                }
+            }
+        }
       
         stage('Run Lefthook Pre-Commit') {
             steps {
@@ -184,7 +244,7 @@ pipeline {
                 }
             }
         }
-
+   
         
         stage('Run Simple Test') {
             steps {
@@ -203,7 +263,6 @@ pipeline {
                     sh """
                         echo '🧪 Запускаємо тести...'
                         cd ${WORKSPACE_DIR}
-                        RAILS_ENV=test /bin/bash --login -c "bundle exec rake db:create db:migrate"
                         RAILS_ENV=test /bin/bash --login -c "bundle exec rspec"
                     """
                 }

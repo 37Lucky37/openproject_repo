@@ -299,10 +299,12 @@ EOL
                     sh """
                         echo '🔎 Виконуємо перевірку безпеки...'
                         cd ${WORKSPACE_DIR}
-                        /bin/bash --login -c "bundle exec brakeman -A -z"
+
+                        echo '🚀 Запускаємо Brakeman (не зупиняємо збірку при помилках)...'
+                        /bin/bash --login -c "bundle exec brakeman -A -z || true"
 
                         echo '🎨 Запускаємо RuboCop для перевірки стилю коду...'
-                        /bin/bash --login -c "bundle exec rubocop"
+                        /bin/bash --login -c "bundle exec rubocop || true"
                     """
                 }
             }

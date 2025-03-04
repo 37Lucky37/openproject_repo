@@ -13,7 +13,7 @@ pipeline {
         DB_TEST_NAME = "openproject_test_db"
         DB_TEST_USER = "openproject_test_user"
         DB_TEST_PASS = "testpassword"
-        RELEASE_BRANCH_PREFIX = "release-1"
+        RELEASE_BRANCH_PREFIX = "release"
     }
 
     stages {  // ❗ Один блок stages
@@ -281,18 +281,6 @@ EOL
             }
         }
 
-        stage('Run Unit & Integration Tests') {
-            steps {
-                script {
-                    sh """
-                        echo '🧪 Запускаємо тести...'
-                        cd ${WORKSPACE_DIR}
-                        RAILS_ENV=test /bin/bash --login -c "bundle exec rspec spec/controllers/admin_controller_spec.rb --format documentation"
-                    """
-                }
-            }
-        }
-
         stage('Run Security & Lint Checks') {
             steps {
                 script {
@@ -305,6 +293,51 @@ EOL
 
                         echo '🎨 Запускаємо RuboCop для перевірки стилю коду...'
                         /bin/bash --login -c "bundle exec rubocop || true"
+                    """
+                }
+            }
+        }
+
+        stage('Run Unit & Integration Tests') {
+            steps {
+                script {
+                    sh """
+                        echo '🧪 Запускаємо тести...'
+                        cd ${WORKSPACE_DIR}
+                        RAILS_ENV=test /bin/bash --login -c "bundle exec rspec spec/controllers/admin_controller_spec.rb --format documentation"
+                    """
+                }
+            }
+        }
+
+        stage('Create Release Branch') {
+            when {
+                expression { return currentBuild.result == null || currentBuild.result == 'SUCCESS' } // Запускаємо лише якщо тести пройшли успішно
+            }
+            steps {
+                script {
+                    sh """
+                        echo '🔀 Створюємо гілку релізу...'
+                        cd ${WORKSPACE_DIR}
+
+                        # Стягуємо останні зміни з Git
+                        git fetch origin ${BRANCH}
+                        git checkout ${BRANCH}
+                        git pull origin ${BRANCH}
+
+                        # Отримуємо хеш поточного коміту
+                        COMMIT_HASH=\$(git rev-parse HEAD)
+                        echo "Поточний коміт: \$COMMIT_HASH"
+
+                        # Створюємо унікальну гілку релізу
+                        RELEASE_BRANCH="${RELEASE_BRANCH_PREFIX}-\$(date +%Y%m%d-%H%M%S)"
+                        echo "Нова гілка релізу: \$RELEASE_BRANCH"
+
+                        # Переключаємося на нову гілку та пушимо її
+                        git checkout -b \$RELEASE_BRANCH \$COMMIT_HASH
+                        git push origin \$RELEASE_BRANCH
+
+                        echo "✅ Гілка \$RELEASE_BRANCH створена та запушена!"
                     """
                 }
             }

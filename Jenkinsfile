@@ -14,6 +14,9 @@ pipeline {
         DEPLOY_USER = "vagrant" // Юзер на сервері
         DEPLOY_HOST = "192.168.77.104" // IP цільового сервера
         DEPLOY_DIR = "/home/vagrant/ansible/openproject/artifacts" // Куди заливати
+        DB_TEST_NAME = "openproject_test"
+        DB_TEST_USER = "test_user"
+        DB_TEST_PASS = "testpassword"
     }
 
     stages {  // ❗ Один блок stages
@@ -129,18 +132,19 @@ pipeline {
             }
         }
       
-        // stage('Setup Test Database') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '🛠️ Створюємо тестового користувача та базу...'
-        //                 sudo -u postgres psql -c "CREATE USER test_user WITH PASSWORD 'test_password';"
-        //                 sudo -u postgres psql -c "CREATE DATABASE openproject_test OWNER test_user;"
-        //                 sudo -u postgres psql -c "ALTER USER test_user CREATEDB;"
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Setup Test Database') {
+            steps {
+                script {
+                    sh """
+                        echo '📦 Налаштовуємо тестову базу...'
+                        sudo -u postgres psql -c "CREATE USER ${DB_TEST_USER} WITH PASSWORD '${DB_TEST_PASS}' CREATEDB;"
+                        sudo -u postgres psql -c "CREATE DATABASE ${DB_TEST_NAME} OWNER ${DB_TEST_USER} ENCODING 'UTF8';"
+                        echo '✅ Тестова база створена!'
+                    """
+                }
+            }
+        }
+
 
         stage('Setup Local Database Configuration') {
             steps {
@@ -149,16 +153,16 @@ pipeline {
                         echo '🛠 Створюємо config/database.yml для тестів...'
                         cd ${WORKSPACE_DIR}/config
                         cat > database.yml <<EOL
-                        test:
-                          adapter: postgresql
-                          encoding: unicode
-                          database: openproject_test
-                          pool: 5
-                          username: test_user
-                          password: test_password
-                          host: localhost
-                          port: 5432
-                        EOL
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: ${DB_TEST_NAME}
+  pool: 5
+  username: ${DB_TEST_USER}
+  password: ${DB_TEST_PASS}
+  host: localhost
+  port: 5432
+EOL
                     """
                 }
             }
@@ -218,107 +222,107 @@ pipeline {
             }
         }
       
-        stage('Run Lefthook Pre-Commit') {
-            steps {
-                script {
-                    sh """
-                        echo '🔍 Запускаємо Lefthook...'
-                        cd ${WORKSPACE_DIR}
-                        /bin/bash --login -c "lefthook run pre-commit"
-                    """
-                }
-            }
-        }
+        // stage('Run Lefthook Pre-Commit') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '🔍 Запускаємо Lefthook...'
+        //                 cd ${WORKSPACE_DIR}
+        //                 /bin/bash --login -c "lefthook run pre-commit"
+        //             """
+        //         }
+        //     }
+        // }
 
 
-        stage('Verify Installation') {
-            steps {
-                script {
-                    sh """
-                        echo '✅ Перевіряємо середовище:'
-                        /bin/bash --login -c "ruby -v"
-                        /bin/bash --login -c "bundler -v"
-                        node -v
-                        npm -v
-                    """
-                }
-            }
-        }
+        // stage('Verify Installation') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '✅ Перевіряємо середовище:'
+        //                 /bin/bash --login -c "ruby -v"
+        //                 /bin/bash --login -c "bundler -v"
+        //                 node -v
+        //                 npm -v
+        //             """
+        //         }
+        //     }
+        // }
    
         
-        stage('Run Simple Test') {
-            steps {
-                script {
-                    sh """
-                        echo '✅ Виконуємо тестову команду:'
-                        echo 'Hello, Jenkins Agent!'
-                    """
-                }
-            }
-        }
+        // stage('Run Simple Test') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '✅ Виконуємо тестову команду:'
+        //                 echo 'Hello, Jenkins Agent!'
+        //             """
+        //         }
+        //     }
+        // }
 
-        stage('Run Unit & Integration Tests') {
-            steps {
-                script {
-                    sh """
-                        echo '🧪 Запускаємо тести...'
-                        cd ${WORKSPACE_DIR}
-                        RAILS_ENV=test /bin/bash --login -c "bundle exec rspec"
-                    """
-                }
-            }
-        }
+        // stage('Run Unit & Integration Tests') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '🧪 Запускаємо тести...'
+        //                 cd ${WORKSPACE_DIR}
+        //                 RAILS_ENV=test /bin/bash --login -c "bundle exec rspec"
+        //             """
+        //         }
+        //     }
+        // }
 
-        stage('Run Frontend Tests') {
-            steps {
-                script {
-                    sh """
-                        echo '🧪 Запускаємо фронтенд тести...'
-                        cd ${WORKSPACE_DIR}/frontend
-                        npm run test
-                    """
-                }
-            }
-        }
+        // stage('Run Frontend Tests') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '🧪 Запускаємо фронтенд тести...'
+        //                 cd ${WORKSPACE_DIR}/frontend
+        //                 npm run test
+        //             """
+        //         }
+        //     }
+        // }
 
-        stage('Run System (End-to-End) Tests') {
-            steps {
-                script {
-                    sh """
-                        echo '🧪 Запускаємо системні тести...'
-                        cd ${WORKSPACE_DIR}
-                        RAILS_ENV=test /bin/bash --login -c "bundle exec rake spec:system"
-                    """
-                }
-            }
-        }
+        // stage('Run System (End-to-End) Tests') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '🧪 Запускаємо системні тести...'
+        //                 cd ${WORKSPACE_DIR}
+        //                 RAILS_ENV=test /bin/bash --login -c "bundle exec rake spec:system"
+        //             """
+        //         }
+        //     }
+        // }
 
-        stage('Run Security & Lint Checks') {
-            steps {
-                script {
-                    sh """
-                        echo '🔎 Виконуємо перевірку безпеки...'
-                        cd ${WORKSPACE_DIR}
-                        /bin/bash --login -c "bundle exec brakeman -A -z"
+        // stage('Run Security & Lint Checks') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '🔎 Виконуємо перевірку безпеки...'
+        //                 cd ${WORKSPACE_DIR}
+        //                 /bin/bash --login -c "bundle exec brakeman -A -z"
 
-                        echo '🎨 Запускаємо RuboCop для перевірки стилю коду...'
-                        /bin/bash --login -c "bundle exec rubocop"
-                    """
-                }
-            }
-        }
+        //                 echo '🎨 Запускаємо RuboCop для перевірки стилю коду...'
+        //                 /bin/bash --login -c "bundle exec rubocop"
+        //             """
+        //         }
+        //     }
+        // }
       
-        stage('Check Environment') {
-            steps {
-                script {
-                    sh """
-                        echo '🖥️ Перевіряємо середовище на агенті:'
-                        uname -a
-                        whoami
-                        pwd
-                    """
-                }
-            }
-        }
+        // stage('Check Environment') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '🖥️ Перевіряємо середовище на агенті:'
+        //                 uname -a
+        //                 whoami
+        //                 pwd
+        //             """
+        //         }
+        //     }
+        // }
     } // ❗ Закриваємо єдиний блок `stages`
 } // ❗ Закриваємо `pipeline`

@@ -136,10 +136,11 @@ pipeline {
             steps {
                 script {
                     sh """
-                        echo '📦 Налаштовуємо тестову базу...'
-                        sudo -u postgres psql -c "CREATE USER ${DB_TEST_USER} WITH PASSWORD '${DB_TEST_PASS}' CREATEDB;"
+                        # Створюємо користувача з правами SUPERUSER
+                        sudo -u postgres psql -c "CREATE ROLE ${DB_TEST_USER} WITH SUPERUSER LOGIN PASSWORD '${DB_TEST_PASS}';"
+                
+                        # Створюємо тестову базу, якщо її немає
                         sudo -u postgres psql -c "CREATE DATABASE ${DB_TEST_NAME} OWNER ${DB_TEST_USER} ENCODING 'UTF8';"
-                        echo '✅ Тестова база створена!'
                     """
                 }
             }

@@ -129,18 +129,18 @@ pipeline {
             }
         }
       
-        stage('Setup Test Database') {
-            steps {
-                script {
-                    sh """
-                        echo '🛠️ Створюємо тестового користувача та базу...'
-                        sudo -u postgres psql -c "CREATE USER test_user WITH PASSWORD 'test_password';"
-                        sudo -u postgres psql -c "CREATE DATABASE openproject_test OWNER test_user;"
-                        sudo -u postgres psql -c "ALTER USER test_user CREATEDB;"
-                    """
-                }
-            }
-        }
+        // stage('Setup Test Database') {
+        //     steps {
+        //         script {
+        //             sh """
+        //                 echo '🛠️ Створюємо тестового користувача та базу...'
+        //                 sudo -u postgres psql -c "CREATE USER test_user WITH PASSWORD 'test_password';"
+        //                 sudo -u postgres psql -c "CREATE DATABASE openproject_test OWNER test_user;"
+        //                 sudo -u postgres psql -c "ALTER USER test_user CREATEDB;"
+        //             """
+        //         }
+        //     }
+        // }
 
         stage('Setup Local Database Configuration') {
             steps {

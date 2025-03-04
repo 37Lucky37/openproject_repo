@@ -132,25 +132,25 @@ pipeline {
         stage('Setup Test Database') {
             steps {
                 script {
-                    sh """
-                        echo '🔍 Перевіряємо чи існує користувач ${DB_TEST_USER}...'
+                    sh '''
+                        echo "🔍 Перевіряємо чи існує користувач ${DB_TEST_USER}..."
                         USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_TEST_USER}';")
                         if [ -z "$USER_EXISTS" ]; then
-                            echo '✅ Створюємо користувача...'
+                            echo "✅ Створюємо користувача..."
                             sudo -u postgres psql -c "CREATE ROLE ${DB_TEST_USER} WITH SUPERUSER LOGIN PASSWORD '${DB_TEST_PASS}';"
                         else
-                            echo '⚠️ Користувач вже існує. Пропускаємо.'
+                            echo "⚠️ Користувач вже існує. Пропускаємо."
                         fi
 
-                        echo '🔍 Перевіряємо чи існує база даних ${DB_TEST_NAME}...'
+                        echo "🔍 Перевіряємо чи існує база даних ${DB_TEST_NAME}..."
                         DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_TEST_NAME}';")
                         if [ -z "$DB_EXISTS" ]; then
-                            echo '✅ Створюємо базу даних...'
+                            echo "✅ Створюємо базу даних..."
                             sudo -u postgres psql -c "CREATE DATABASE ${DB_TEST_NAME} OWNER ${DB_TEST_USER} ENCODING 'UTF8';"
                         else
-                            echo '⚠️ База даних вже існує. Пропускаємо.'
+                            echo "⚠️ База даних вже існує. Пропускаємо."
                         fi
-                    """
+                    '''
                 }
             }
         }

@@ -14,8 +14,8 @@ pipeline {
         DEPLOY_USER = "vagrant" // Юзер на сервері
         DEPLOY_HOST = "192.168.77.104" // IP цільового сервера
         DEPLOY_DIR = "/home/vagrant/ansible/openproject/artifacts" // Куди заливати
-        DB_TEST_NAME = "openproject_test"
-        DB_TEST_USER = "test_user"
+        DB_TEST_NAME = "openproject_test_db"
+        DB_TEST_USER = "openproject_test_user"
         DB_TEST_PASS = "testpassword"
     }
 

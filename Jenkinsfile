@@ -10,13 +10,10 @@ pipeline {
         RUBY_VERSION = "3.4.1"
         BUNDLER_VERSION = "2.6.3"
         RBENV_ROOT = "${HOME}/.rbenv"
-        ARTIFACT_NAME = "openproject_build-5.0.tar.gz"
-        DEPLOY_USER = "vagrant" // Юзер на сервері
-        DEPLOY_HOST = "192.168.77.104" // IP цільового сервера
-        DEPLOY_DIR = "/home/vagrant/ansible/openproject/artifacts" // Куди заливати
         DB_TEST_NAME = "openproject_test_db"
         DB_TEST_USER = "openproject_test_user"
         DB_TEST_PASS = "testpassword"
+        RELEASE_BRANCH_PREFIX = "release-1"
     }
 
     stages {  // ❗ Один блок stages
@@ -136,16 +133,38 @@ pipeline {
             steps {
                 script {
                     sh """
-                        # Створюємо користувача з правами SUPERUSER
-                        sudo -u postgres psql -c "CREATE ROLE ${DB_TEST_USER} WITH SUPERUSER LOGIN PASSWORD '${DB_TEST_PASS}';"
-                
-                        # Створюємо тестову базу, якщо її немає
-                        sudo -u postgres psql -c "CREATE DATABASE ${DB_TEST_NAME} OWNER ${DB_TEST_USER} ENCODING 'UTF8';"
+                        echo '🔍 Перевіряємо чи існує користувач ${DB_TEST_USER}...'
+                        USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_TEST_USER}';")
+                        if [ -z "$USER_EXISTS" ]; then
+                            echo '✅ Створюємо користувача...'
+                            sudo -u postgres psql -c "CREATE ROLE ${DB_TEST_USER} WITH SUPERUSER LOGIN PASSWORD '${DB_TEST_PASS}';"
+                        else
+                            echo '⚠️ Користувач вже існує. Пропускаємо.'
+                        fi
+
+                        echo '🔍 Перевіряємо чи існує база даних ${DB_TEST_NAME}...'
+                        DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_TEST_NAME}';")
+                        if [ -z "$DB_EXISTS" ]; then
+                            echo '✅ Створюємо базу даних...'
+                            sudo -u postgres psql -c "CREATE DATABASE ${DB_TEST_NAME} OWNER ${DB_TEST_USER} ENCODING 'UTF8';"
+                        else
+                            echo '⚠️ База даних вже існує. Пропускаємо.'
+                        fi
                     """
                 }
             }
         }
 
+        stage('Install pgcrypto Extension') {
+            steps {
+                script {
+                    sh """
+                        echo '🔍 Встановлюємо pgcrypto, якщо його немає...'
+                        sudo -u postgres psql -d ${DB_TEST_NAME} -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+                    """
+                }
+            }
+        }
 
         stage('Setup Local Database Configuration') {
             steps {
@@ -223,107 +242,83 @@ EOL
             }
         }
       
-        // stage('Run Lefthook Pre-Commit') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '🔍 Запускаємо Lefthook...'
-        //                 cd ${WORKSPACE_DIR}
-        //                 /bin/bash --login -c "lefthook run pre-commit"
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Run Lefthook Pre-Commit') {
+            steps {
+                script {
+                    sh """
+                        echo '🔍 Запускаємо Lefthook...'
+                        cd ${WORKSPACE_DIR}
+                        /bin/bash --login -c "lefthook run pre-commit"
+                    """
+                }
+            }
+        }
 
 
-        // stage('Verify Installation') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '✅ Перевіряємо середовище:'
-        //                 /bin/bash --login -c "ruby -v"
-        //                 /bin/bash --login -c "bundler -v"
-        //                 node -v
-        //                 npm -v
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Verify Installation') {
+            steps {
+                script {
+                    sh """
+                        echo '✅ Перевіряємо середовище:'
+                        /bin/bash --login -c "ruby -v"
+                        /bin/bash --login -c "bundler -v"
+                        node -v
+                        npm -v
+                    """
+                }
+            }
+        }
    
         
-        // stage('Run Simple Test') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '✅ Виконуємо тестову команду:'
-        //                 echo 'Hello, Jenkins Agent!'
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Run Simple Test') {
+            steps {
+                script {
+                    sh """
+                        echo '✅ Виконуємо тестову команду:'
+                        echo 'Hello, Jenkins Agent!'
+                    """
+                }
+            }
+        }
 
-        // stage('Run Unit & Integration Tests') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '🧪 Запускаємо тести...'
-        //                 cd ${WORKSPACE_DIR}
-        //                 RAILS_ENV=test /bin/bash --login -c "bundle exec rspec"
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Run Unit & Integration Tests') {
+            steps {
+                script {
+                    sh """
+                        echo '🧪 Запускаємо тести...'
+                        cd ${WORKSPACE_DIR}
+                        RAILS_ENV=test /bin/bash --login -c "bundle exec rspec spec/controllers/admin_controller_spec.rb --format documentation"
+                    """
+                }
+            }
+        }
 
-        // stage('Run Frontend Tests') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '🧪 Запускаємо фронтенд тести...'
-        //                 cd ${WORKSPACE_DIR}/frontend
-        //                 npm run test
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Run Security & Lint Checks') {
+            steps {
+                script {
+                    sh """
+                        echo '🔎 Виконуємо перевірку безпеки...'
+                        cd ${WORKSPACE_DIR}
+                        /bin/bash --login -c "bundle exec brakeman -A -z"
 
-        // stage('Run System (End-to-End) Tests') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '🧪 Запускаємо системні тести...'
-        //                 cd ${WORKSPACE_DIR}
-        //                 RAILS_ENV=test /bin/bash --login -c "bundle exec rake spec:system"
-        //             """
-        //         }
-        //     }
-        // }
-
-        // stage('Run Security & Lint Checks') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '🔎 Виконуємо перевірку безпеки...'
-        //                 cd ${WORKSPACE_DIR}
-        //                 /bin/bash --login -c "bundle exec brakeman -A -z"
-
-        //                 echo '🎨 Запускаємо RuboCop для перевірки стилю коду...'
-        //                 /bin/bash --login -c "bundle exec rubocop"
-        //             """
-        //         }
-        //     }
-        // }
+                        echo '🎨 Запускаємо RuboCop для перевірки стилю коду...'
+                        /bin/bash --login -c "bundle exec rubocop"
+                    """
+                }
+            }
+        }
       
-        // stage('Check Environment') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '🖥️ Перевіряємо середовище на агенті:'
-        //                 uname -a
-        //                 whoami
-        //                 pwd
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Check Environment') {
+            steps {
+                script {
+                    sh """
+                        echo '🖥️ Перевіряємо середовище на агенті:'
+                        uname -a
+                        whoami
+                        pwd
+                    """
+                }
+            }
+        }
     } // ❗ Закриваємо єдиний блок `stages`
 } // ❗ Закриваємо `pipeline`

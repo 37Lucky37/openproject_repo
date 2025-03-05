@@ -14,6 +14,7 @@ pipeline {
         DB_TEST_USER = "openproject_test_user"
         DB_TEST_PASS = "testpassword"
         RELEASE_BRANCH_PREFIX = "release"
+        CURRENT_BRANCH = "${env.BRANCH_NAME}"
     }
 
     stages {  // ❗ Один блок stages
@@ -114,16 +115,16 @@ pipeline {
             }
         }
 
-        stage('Clone Repository') {
+        stage('Checkout Code') {
             steps {
                 script {
                     checkout([$class: 'GitSCM',
-                        branches: [[name: "*/${BRANCH}"]],
+                        branches: [[name: "*/${CURRENT_BRANCH}"]],
                         userRemoteConfigs: [[
                             url: REPO,
                             credentialsId: CREDENTIALS_ID
                         ]],
-                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${WORKSPACE_DIR}"]]
+                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "openproject"]]
                     ])
                 }
             }

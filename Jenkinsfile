@@ -125,7 +125,7 @@ pipeline {
                             url: REPO,
                             credentialsId: CREDENTIALS_ID
                         ]],
-                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: ${WORKSPACE_DIR}]]
+                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${WORKSPACE_DIR}"]]
                     ])
                 }
             }
@@ -320,7 +320,7 @@ EOL
                 script {
                     sh """
                         echo '🏷 Determining new version tag...'
-                        cd ${WORKSPACE_DIR}
+                        cd "${WORKSPACE_DIR}"
                         LAST_TAG=$(git describe --tags --abbrev=0 || echo "1.0.0")
                         VERSION_PARTS=(${LAST_TAG//./ })
                         MAJOR=${VERSION_PARTS[0]}

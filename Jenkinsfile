@@ -316,7 +316,7 @@ EOL
             }
             steps {
                 script {
-                    sh """
+                    sh '''
                         echo '🏷 Determining new version tag...'
                         cd ${WORKSPACE_DIR}
                         LAST_TAG=$(git describe --tags --abbrev=0 || echo "1.0.0")
@@ -342,7 +342,7 @@ EOL
                         git tag \$NEW_TAG
                         git push origin \$NEW_TAG
                         echo "✅ Release tag \$NEW_TAG created!"
-                    """
+                    '''
                 }
             }
         }

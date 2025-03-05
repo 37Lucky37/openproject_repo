@@ -17,7 +17,7 @@ pipeline {
         DB_TEST_NAME = "openproject_test_db"
         DB_TEST_USER = "openproject_test_user"
         DB_TEST_PASS = "testpassword"
-        RELEASE_BRANCH_PREFIX = "release"
+        RELEASE_BRANCH_PREFIX = "release-v"
         CURRENT_BRANCH = "${env.BRANCH_NAME}"
     }
 
@@ -321,33 +321,43 @@ EOL
             }
             steps {
                 script {
-                    sh '''
+                    sh """
                         echo '🏷 Determining new version tag...'
-                        cd ${WORKSPACE_DIR}
-                        LAST_TAG=$(git describe --tags --abbrev=0 || echo "1.0.0")
+                        cd "${WORKSPACE_DIR}"
+                        
+                        # Get latest tag or set default
+                        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
+                        
+                        # Parse the tag into major, minor, patch
                         VERSION_PARTS=(${LAST_TAG//./ })
                         MAJOR=${VERSION_PARTS[0]}
                         MINOR=${VERSION_PARTS[1]}
                         PATCH=${VERSION_PARTS[2]}
+                        
+                        # Increment the patch version
                         NEW_PATCH=$((PATCH + 1))
                         NEW_TAG="$MAJOR.$MINOR.$NEW_PATCH"
-                        echo "New tag: \$NEW_TAG"
+                        echo "New tag: \${NEW_TAG}"
 
-                        RELEASE_BRANCH="${RELEASE_BRANCH_PREFIX}-v\$NEW_TAG"
-                        echo "Creating release branch: \$RELEASE_BRANCH"
+                        # Define release branch name
+                        RELEASE_BRANCH="${RELEASE_BRANCH_PREFIX}-v\${NEW_TAG}"
+                        echo "Creating release branch: \${RELEASE_BRANCH}"
 
+                        # Ensure we have latest changes
                         git fetch origin develop
                         git checkout develop
                         git pull origin develop
-                        git checkout -b \$RELEASE_BRANCH
-                        git push origin \$RELEASE_BRANCH
-                        echo "✅ Release branch \$RELEASE_BRANCH created and pushed!"
 
-                        echo '🏷 Creating new release tag...'
-                        git tag \$NEW_TAG
-                        git push origin \$NEW_TAG
-                        echo "✅ Release tag \$NEW_TAG created!"
-                    '''
+                        # Create and push the release branch
+                        git checkout -b "\${RELEASE_BRANCH}"
+                        git push origin "\${RELEASE_BRANCH}"
+                        echo "✅ Release branch \${RELEASE_BRANCH} created and pushed!"
+
+                        # Create and push the new tag
+                        git tag "\${NEW_TAG}"
+                        git push origin "\${NEW_TAG}"
+                        echo "✅ Release tag \${NEW_TAG} created!"
+                    """
                 }
             }
         }

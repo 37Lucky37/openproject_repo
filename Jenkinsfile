@@ -125,7 +125,7 @@ pipeline {
                             url: REPO,
                             credentialsId: CREDENTIALS_ID
                         ]],
-                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${WORKSPACE_DIR}"]]
+                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: ${WORKSPACE_DIR}]]
                     ])
                 }
             }

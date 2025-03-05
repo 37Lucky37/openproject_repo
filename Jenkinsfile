@@ -1,12 +1,9 @@
 pipeline {
     agent { label 'agent-build' } // Виконання на агенті
 
-    triggers {
-        githubPush()  // Виклик при пуші в репозиторій
-    }
-    
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"
+        BRANCH = "main"
         CREDENTIALS_ID = "jenkins-openproject-cred" // ID SSH-ключа з Jenkins Credentials
         WORKSPACE_DIR = "${HOME}/openproject" // Директорія для стягування репозиторію
         NODE_VERSION = "20.18.3"
@@ -16,6 +13,7 @@ pipeline {
         DB_TEST_NAME = "openproject_test_db"
         DB_TEST_USER = "openproject_test_user"
         DB_TEST_PASS = "testpassword"
+        RELEASE_BRANCH_PREFIX = "release"
     }
 
     stages {  // ❗ Один блок stages
@@ -116,11 +114,11 @@ pipeline {
             }
         }
 
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
                 script {
                     checkout([$class: 'GitSCM',
-                        branches: [[name: "*/${env.BRANCH}"]],
+                        branches: [[name: "*/${BRANCH}"]],
                         userRemoteConfigs: [[
                             url: REPO,
                             credentialsId: CREDENTIALS_ID
@@ -312,38 +310,34 @@ EOL
             }
         }
 
-        stage('Create Release Branch and Tag') {
+        stage('Create Release Branch') {
             when {
-                expression { return env.BRANCH == 'develop' && (currentBuild.result == null || currentBuild.result == 'SUCCESS') }
+                expression { return currentBuild.result == null || currentBuild.result == 'SUCCESS' } // Запускаємо лише якщо тести пройшли успішно
             }
             steps {
                 script {
                     sh """
-                        echo '🏷 Determining new version tag...'
-                        cd "${WORKSPACE_DIR}"
-                        LAST_TAG=$(git describe --tags --abbrev=0 || echo "1.0.0")
-                        VERSION_PARTS=(${LAST_TAG//./ })
-                        MAJOR=${VERSION_PARTS[0]}
-                        MINOR=${VERSION_PARTS[1]}
-                        PATCH=${VERSION_PARTS[2]}
-                        NEW_PATCH=$((PATCH + 1))
-                        NEW_TAG="$MAJOR.$MINOR.$NEW_PATCH"
-                        echo "New tag: \$NEW_TAG"
+                        echo '🔀 Створюємо гілку релізу...'
+                        cd ${WORKSPACE_DIR}
 
-                        RELEASE_BRANCH="${RELEASE_BRANCH_PREFIX}-v\$NEW_TAG"
-                        echo "Creating release branch: \$RELEASE_BRANCH"
+                        # Стягуємо останні зміни з Git
+                        git fetch origin ${BRANCH}
+                        git checkout ${BRANCH}
+                        git pull origin ${BRANCH}
 
-                        git fetch origin develop
-                        git checkout develop
-                        git pull origin develop
-                        git checkout -b \$RELEASE_BRANCH
+                        # Отримуємо хеш поточного коміту
+                        COMMIT_HASH=\$(git rev-parse HEAD)
+                        echo "Поточний коміт: \$COMMIT_HASH"
+
+                        # Створюємо унікальну гілку релізу
+                        RELEASE_BRANCH="${RELEASE_BRANCH_PREFIX}-\$(date +%Y%m%d-%H%M%S)"
+                        echo "Нова гілка релізу: \$RELEASE_BRANCH"
+
+                        # Переключаємося на нову гілку та пушимо її
+                        git checkout -b \$RELEASE_BRANCH \$COMMIT_HASH
                         git push origin \$RELEASE_BRANCH
-                        echo "✅ Release branch \$RELEASE_BRANCH created and pushed!"
 
-                        echo '🏷 Creating new release tag...'
-                        git tag \$NEW_TAG
-                        git push origin \$NEW_TAG
-                        echo "✅ Release tag \$NEW_TAG created!"
+                        echo "✅ Гілка \$RELEASE_BRANCH створена та запушена!"
                     """
                 }
             }

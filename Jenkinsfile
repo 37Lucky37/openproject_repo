@@ -1,6 +1,10 @@
 pipeline {
     agent { label 'agent-build' } // Виконання на агенті
 
+    triggers {
+        githubPush()
+    }
+  
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"
         BRANCH = "main"

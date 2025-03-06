@@ -24,7 +24,6 @@ pipeline {
         }
 
         stage('Create Release Branch & Tag') {
-            when { expression { return env.BRANCH_NAME == 'develop' } }
             steps {
                 script {
                     sh """

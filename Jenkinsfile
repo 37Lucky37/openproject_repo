@@ -340,6 +340,9 @@ pipeline {
                         # Переключаємося на нову гілку
                         git checkout -b \$RELEASE_BRANCH \$COMMIT_HASH
 
+                        git config user.name "Jenkins CI"
+                        git config user.email "jenkins@yourdomain.com"
+
                         # Видаляємо Jenkinsfile перед пушем
                         git rm --cached Jenkinsfile || true
                         git commit -m "🚀 Release branch without Jenkinsfile"

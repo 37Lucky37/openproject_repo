@@ -46,14 +46,16 @@ pipeline {
 
                         # Отримуємо останній тег або встановлюємо дефолтний
                         LAST_TAG=$(git fetch --tags && git tag --sort=-v:refname | head -n 1)
-                        if [[ -z "$LAST_TAG" ]]; then
+                        if [ -z "$LAST_TAG" ]; then
                             LAST_TAG="1.0.0"
                         fi
                         echo "Останній тег: $LAST_TAG"
 
                         # Перевіряємо правильність формату тегу (X.Y.Z)
-                        if echo "$LAST_TAG" | grep -qE '^[0-9]+\\.[0-9]+\\.[0-9]+$'; then
-                            IFS='.' read -r MAJOR MINOR PATCH <<< "$LAST_TAG"
+                        if echo "$LAST_TAG" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+                            MAJOR=$(echo "$LAST_TAG" | cut -d. -f1)
+                            MINOR=$(echo "$LAST_TAG" | cut -d. -f2)
+                            PATCH=$(echo "$LAST_TAG" | cut -d. -f3)
                         else
                             echo "❌ Помилка: Некоректний формат тегу: $LAST_TAG"
                             exit 1

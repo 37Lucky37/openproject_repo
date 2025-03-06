@@ -1,9 +1,13 @@
 pipeline {
     agent { label 'agent-build' } // Виконання на агенті
-
+  
+    triggers {
+        githubPush()  // Тригер для GitHub push
+    }
+  
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"
-        BRANCH = "main"
+        BRANCH = "develop"
         CREDENTIALS_ID = "jenkins-openproject-cred" // ID SSH-ключа з Jenkins Credentials
         WORKSPACE_DIR = "${HOME}/openproject" // Директорія для стягування репозиторію
         NODE_VERSION = "20.18.3"

@@ -1,34 +1,20 @@
 pipeline {
-    agent { label 'agent-build' } // Виконання на агенті
+    agent { label 'agent-build' } 
 
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"
-        BRANCH = "main"
-        CREDENTIALS_ID = "jenkins-openproject-cred" // ID SSH-ключа з Jenkins Credentials
-        WORKSPACE_DIR = "${env.HOME}/openproject" // Директорія для стягування репозиторію
+        BRANCH = "develop"
+        CREDENTIALS_ID = "jenkins-openproject-cred"
+        WORKSPACE_DIR = "${env.HOME}/openproject"
         RELEASE_BRANCH_PREFIX = "release"
     }
 
     stages {
-        stage('Upgrade Git') {
-            steps {
-                script {
-                    sh '''
-                        echo "⬆️ Оновлюємо Git..."
-                        sudo add-apt-repository ppa:git-core/ppa -y
-                        sudo apt update
-                        sudo apt install -y git
-                        git --version
-                    '''
-                }
-            }
-        }
-
         stage('Prepare Workspace') {
             steps {
                 script {
                     sh '''
-                        echo "🛠️ Очищаємо робочу директорію..."
+                        echo "🛠 Очищаємо робочу директорію..."
                         rm -rf ${WORKSPACE_DIR}
                         mkdir -p ${WORKSPACE_DIR}
                     '''
@@ -59,11 +45,14 @@ pipeline {
                         cd ${WORKSPACE_DIR}
 
                         # Отримуємо останній тег або встановлюємо дефолтний
-                        LAST_TAG=$(git fetch --tags && git tag --sort=-v:refname | head -n 1 || echo "1.0.0")
+                        LAST_TAG=$(git fetch --tags && git tag --sort=-v:refname | head -n 1)
+                        if [[ -z "$LAST_TAG" ]]; then
+                            LAST_TAG="1.0.0"
+                        fi
                         echo "Останній тег: $LAST_TAG"
 
                         # Перевіряємо правильність формату тегу (X.Y.Z)
-                        if [[ "$LAST_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                        if echo "$LAST_TAG" | grep -qE '^[0-9]+\\.[0-9]+\\.[0-9]+$'; then
                             IFS='.' read -r MAJOR MINOR PATCH <<< "$LAST_TAG"
                         else
                             echo "❌ Помилка: Некоректний формат тегу: $LAST_TAG"
@@ -91,18 +80,5 @@ pipeline {
                 }
             }
         }
-
-        stage('Check Environment') {
-            steps {
-                script {
-                    sh '''
-                        echo "🖥️ Перевіряємо середовище на агенті:"
-                        uname -a
-                        whoami
-                        pwd
-                    '''
-                }
-            }
-        }
-    } // ❗ Закриваємо stages
-} // ❗ Закриваємо pipeline
+    }
+}

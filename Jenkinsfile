@@ -31,8 +31,9 @@ pipeline {
                         cd ${WORKSPACE}
                         
                         # Отримуємо останній тег або встановлюємо дефолт
-                        LAST_TAG=\$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
-                        
+                        LAST_TAG=\$(git tag --sort=-creatordate | head -n 1 || echo "1.0.0")
+                        echo "LAST_TAG: \$LAST_TAG"
+
                         # Розбиваємо на MAJOR, MINOR, PATCH
                         IFS='.' read -r MAJOR MINOR PATCH <<EOF
                         \$LAST_TAG
@@ -41,7 +42,7 @@ pipeline {
                         # Інкрементуємо версію
                         NEW_PATCH=\$((PATCH + 1))
                         NEW_TAG="\$MAJOR.\$MINOR.\$NEW_PATCH"
-                        echo \$NEW_TAG > new_tag.txt
+                        echo \$NEW_TAG > ${WORKSPACE}/new_tag.txt
                         echo "Новий тег: \$NEW_TAG"
 
                         # Створюємо релізну гілку
@@ -55,6 +56,9 @@ pipeline {
 
                         echo "✅ Гілка \$RELEASE_BRANCH і тег \$NEW_TAG створені!"
                     """
+
+                    // Зберігаємо файл для використання в наступній стадії
+                    stash includes: 'new_tag.txt', name: 'tag_file'
                 }
             }
         }
@@ -62,7 +66,10 @@ pipeline {
         stage('Create GitHub Release') {
             steps {
                 script {
-                    env.NEW_TAG = readFile('new_tag.txt').trim()
+                    // Відновлюємо файл new_tag.txt
+                    unstash 'tag_file'
+
+                    env.NEW_TAG = readFile("${WORKSPACE}/new_tag.txt").trim()
                     withCredentials([string(credentialsId: GITHUB_TOKEN_ID, variable: 'GITHUB_TOKEN')]) {
                         sh """
                             curl -X POST -H "Authorization: token \$GITHUB_TOKEN" \

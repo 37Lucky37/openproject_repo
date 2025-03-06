@@ -337,10 +337,16 @@ pipeline {
                         RELEASE_BRANCH="${RELEASE_BRANCH_PREFIX}-\$(date +%Y-%m-%d_%H-%M)"
                         echo "Нова гілка релізу: \$RELEASE_BRANCH"
 
-                        # Переключаємося на нову гілку та пушимо її
+                        # Переключаємося на нову гілку
                         git checkout -b \$RELEASE_BRANCH \$COMMIT_HASH
-                        git push origin \$RELEASE_BRANCH
 
+                        # Видаляємо Jenkinsfile перед пушем
+                        git rm --cached Jenkinsfile || true
+                        git commit -m "🚀 Release branch without Jenkinsfile"
+
+                        # Запушуємо гілку без Jenkinsfile
+                        git push origin \$RELEASE_BRANCH
+      
                         echo "✅ Гілка \$RELEASE_BRANCH створена та запушена!"
                     """
                 }

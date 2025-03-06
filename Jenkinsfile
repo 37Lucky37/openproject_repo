@@ -334,7 +334,7 @@ pipeline {
                         echo "Поточний коміт: \$COMMIT_HASH"
 
                         # Створюємо унікальну гілку релізу
-                        RELEASE_BRANCH="${RELEASE_BRANCH_PREFIX}-\$(date +%Y-%m-%d-%H:%M)"
+                        RELEASE_BRANCH="${RELEASE_BRANCH_PREFIX}-\$(date +%Y-%m-%d_%H-%M)"
                         echo "Нова гілка релізу: \$RELEASE_BRANCH"
 
                         # Переключаємося на нову гілку та пушимо її

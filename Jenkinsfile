@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'agent-build' } 
+    agent { label 'agent-build' }
 
     environment {
         REPO = "git@github.com:37Lucky37/openproject_repo.git"
@@ -32,11 +32,16 @@ pipeline {
                         
                         # Отримуємо останній тег або встановлюємо дефолт
                         LAST_TAG=\$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
-                        IFS='.' read -r MAJOR MINOR PATCH <<< "\$LAST_TAG"
                         
+                        # Розбиваємо на MAJOR, MINOR, PATCH
+                        IFS='.' read -r MAJOR MINOR PATCH <<EOF
+                        \$LAST_TAG
+                        EOF
+
                         # Інкрементуємо версію
                         NEW_PATCH=\$((PATCH + 1))
                         NEW_TAG="\$MAJOR.\$MINOR.\$NEW_PATCH"
+                        echo \$NEW_TAG > new_tag.txt
                         echo "Новий тег: \$NEW_TAG"
 
                         # Створюємо релізну гілку
@@ -57,6 +62,7 @@ pipeline {
         stage('Create GitHub Release') {
             steps {
                 script {
+                    env.NEW_TAG = readFile('new_tag.txt').trim()
                     withCredentials([string(credentialsId: GITHUB_TOKEN_ID, variable: 'GITHUB_TOKEN')]) {
                         sh """
                             curl -X POST -H "Authorization: token \$GITHUB_TOKEN" \

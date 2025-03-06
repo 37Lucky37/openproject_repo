@@ -106,32 +106,32 @@ pipeline {
         //     }
         // }
       
-        // stage('Prepare Workspace') {
-        //     steps {
-        //         script {
-        //             sh """
-        //                 echo '🛠️ Очищаємо робочу директорію...'
-        //                 rm -rf ${WORKSPACE_DIR}
-        //                 mkdir -p ${WORKSPACE_DIR}
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Prepare Workspace') {
+            steps {
+                script {
+                    sh """
+                        echo '🛠️ Очищаємо робочу директорію...'
+                        rm -rf ${WORKSPACE_DIR}
+                        mkdir -p ${WORKSPACE_DIR}
+                    """
+                }
+            }
+        }
 
-        // stage('Clone Repository') {
-        //     steps {
-        //         script {
-        //             checkout([$class: 'GitSCM',
-        //                 branches: [[name: "*/${BRANCH}"]],
-        //                 userRemoteConfigs: [[
-        //                     url: REPO,
-        //                     credentialsId: CREDENTIALS_ID
-        //                 ]],
-        //                 extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${WORKSPACE_DIR}"]]
-        //             ])
-        //         }
-        //     }
-        // }
+        stage('Clone Repository') {
+            steps {
+                script {
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: "*/${BRANCH}"]],
+                        userRemoteConfigs: [[
+                            url: REPO,
+                            credentialsId: CREDENTIALS_ID
+                        ]],
+                        extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${WORKSPACE_DIR}"]]
+                    ])
+                }
+            }
+        }
       
 //         stage('Setup Test Database') {
 //             steps {

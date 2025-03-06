@@ -18,7 +18,7 @@ pipeline {
         DB_TEST_USER = "openproject_test_user"
         DB_TEST_PASS = "testpassword"
         RELEASE_BRANCH_PREFIX = "release-v"
-        CURRENT_BRANCH = env.BRANCH_NAME ?: "develop"
+        CURRENT_BRANCH = env.BRANCH_NAME
     }
 
     stages {  // ❗ Один блок stages

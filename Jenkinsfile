@@ -2,7 +2,7 @@ pipeline {
     agent { label 'agent-build' } // Виконання на агенті
   
     triggers {
-        githubPush()  // Тригер для GitHub push
+        githubPush()  // Тригер для GitHub push 
     }
   
     environment {

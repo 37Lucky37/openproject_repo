@@ -93,29 +93,29 @@ Rails.application.configure do
 
   # When https is configured, Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # Allow disabling HSTS redirect by using OPENPROJECT_HSTS=false
-  config.force_ssl = OpenProject::Configuration.https?
-  config.ssl_options = {
-    hsts: OpenProject::Configuration.hsts_enabled?,
-    # Disable redirect on the internal SYS API
-    redirect: {
-      exclude: ->(request) do
-        # Disable redirects when hsts is disabled
-        return true unless OpenProject::Configuration.hsts_enabled?
+  # config.force_ssl = OpenProject::Configuration.https?
+  # config.ssl_options = {
+  #   hsts: OpenProject::Configuration.hsts_enabled?,
+  #   # Disable redirect on the internal SYS API
+  #   redirect: {
+  #     exclude: ->(request) do
+  #       # Disable redirects when hsts is disabled
+  #       return true unless OpenProject::Configuration.hsts_enabled?
 
-        # Respect the relative URL
-        relative_url = Regexp.escape(OpenProject::Configuration["rails_relative_url_root"])
+  #       # Respect the relative URL
+  #       relative_url = Regexp.escape(OpenProject::Configuration["rails_relative_url_root"])
 
-        # When we match SYS controller API, allow non-https access
-        return true if /#{relative_url}\/sys\//.match?(request.path)
+  #       # When we match SYS controller API, allow non-https access
+  #       return true if /#{relative_url}\/sys\//.match?(request.path)
 
-        # When we match health checks
-        return true if /#{relative_url}\/health_checks/.match?(request.path)
+  #       # When we match health checks
+  #       return true if /#{relative_url}\/health_checks/.match?(request.path)
 
-        false
-      end
-    },
-    secure_cookies: OpenProject::Configuration.https?
-  }
+  #       false
+  #     end
+  #   },
+  #   secure_cookies: OpenProject::Configuration.https?
+  # }
 
   # Info include generic and useful information about system operation, but avoids logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII). If you

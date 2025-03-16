@@ -1,0 +1,16 @@
+FROM ubuntu:latest
+
+RUN apt update && apt install -y apache2
+
+RUN a2enmod proxy proxy_http proxy_balancer lbmethod_byrequests headers ssl rewrite
+
+COPY apache/openproject.conf /etc/apache2/sites-available/openproject.conf
+
+RUN a2ensite openproject.conf && a2dissite 000-default
+
+RUN service apache2 restart
+
+EXPOSE 80
+
+CMD ["apachectl", "-D", "FOREGROUND"]
+

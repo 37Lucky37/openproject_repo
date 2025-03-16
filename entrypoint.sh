@@ -9,6 +9,7 @@ if [ "$MIGRATE_DB" = "yes" ]; then
   else
     echo "Running migrations..."
     bundle exec rails db:migrate RAILS_ENV=production
+    bundle exec rails db:seed RAILS_ENV=production
   fi
 else
   echo "Skipping database migrations (MIGRATE_DB=$MIGRATE_DB)."

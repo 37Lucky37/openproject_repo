@@ -51,7 +51,7 @@ services:
     networks:
       - openproject_network
     volumes:
-      - ./config/database.yml:/app/config/database.yml
+      - ./database-conf.yml:/app/config/database.yml
   
   apache:
     build:

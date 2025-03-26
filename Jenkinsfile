@@ -17,8 +17,8 @@ pipeline {
                 sh 'docker compose up openproject -d --build --wait'
 
                  sh '''
-                    echo "Waiting for openproject to be healthy..."
-                    until [ "$(docker inspect -f '{{.State.Health.Status}}' openproject_app)" == "healthy" ]; do
+                    echo "Waiting for OpenProject to be ready..."
+                    until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
                         sleep 5
                     done
                 '''

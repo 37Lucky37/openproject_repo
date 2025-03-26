@@ -12,5 +12,11 @@ pipeline {
                 '''
             }
         }
+        stage("verify tooling") {
+            steps {
+                sh 'docker compose up -d --build --wait'
+                sh 'docker compose ps'
+            }
+        }
     }
 }

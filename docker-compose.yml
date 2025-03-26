@@ -4,29 +4,29 @@ networks:
     driver: bridge
 
 services:
-  # postgres:
-  #   image: postgres:latest
-  #   container_name: postgres_container
-  #   restart: always
-  #   environment:
-  #     POSTGRES_DB: openproject_db
-  #     POSTGRES_USER: openproject_user
-  #     POSTGRES_PASSWORD: "1234"
-  #   ports:
-  #     - "5432:5432"
-  #   networks:
-  #     - openproject_network
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_DB: openproject_db
+      POSTGRES_USER: openproject_user
+      POSTGRES_PASSWORD: "1234"
+    ports:
+      - "5432:5432"
+    networks:
+      - openproject_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-  # memcached:
-  #   image: memcached:latest
-  #   container_name: memcached_container
-  #   restart: always
-  #   ports:
-  #     - "11211:11211"
-  #   networks:
-  #     - openproject_network
+  memcached:
+    image: memcached:latest
+    container_name: memcached_container
+    restart: always
+    ports:
+      - "11211:11211"
+    networks:
+      - openproject_network
 
   openproject:
     build:

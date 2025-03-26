@@ -14,7 +14,7 @@ pipeline {
         }
         stage("Start building") {
             steps {
-                sh 'docker compose up -d --build --wait'
+                sh 'docker compose up openproject -d --build --wait'
                 sh 'docker compose ps'
                 sh 'docker logs openproject_app'
             }

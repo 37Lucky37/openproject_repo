@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_USER = '37lucky37'   
-        DOCKERHUB_REPO = '37lucky37/my-openproject'              
+        DOCKERHUB_REPO = 'my-openproject'              
         IMAGE_TAG = 'latest'                        
     }
     

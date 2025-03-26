@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openproject
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openproject
+  template:
+    metadata:
+      labels:
+        app: openproject
+    spec:
+      containers:
+        - name: openproject
+          image: 37lucky37/my-openproject:latest  # Замініть на ваше ім'я образу в DockerHub
+          env:
+            - name: SECRET_KEY_BASE
+              value: "cf99476b3e3d8c9f1843d20b4cd7f1dc4a5c19c777277bc832c8cb39ce129449bc76f3736dc7d27bb1efdb78e68137663d47ac1e82bb251cddd599777a238505"
+            - name: RAILS_ENV
+              value: "production"
+            - name: MEMCACHE_SERVERS
+              value: "memcached:11211"
+            - name: OPENPROJECT_HTTPS
+              value: "false"
+            - name: MIGRATE_DB
+              value: "yes"
+            - name: PRECOMPILE_ASSETS
+              value: "yes"
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config/database.yml
+              subPath: database.yml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: database-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-config
+data:
+  database.yml: |
+    production:
+      adapter: postgresql
+      encoding: unicode
+      database: openproject_db
+      pool: 20
+      username: openproject_user
+      password: 1234
+      host: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openproject
+spec:
+  selector:
+    app: openproject
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP

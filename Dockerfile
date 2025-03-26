@@ -15,7 +15,7 @@ COPY . .
 RUN gem install bundler -v 2.6.3
 
 
-RUN bundle install --without development test
+RUN bundle install
 
 WORKDIR /app/frontend
 RUN npm install

@@ -42,7 +42,8 @@ services:
       MEMCACHE_SERVERS: "memcached:11211"
       OPENPROJECT_HTTPS: "false"
       MIGRATE_DB: "yes"       
-      PRECOMPILE_ASSETS: "yes" 
+      PRECOMPILE_ASSETS: "yes"
+      CI: "true"
     depends_on:
       - postgres
       - memcached
@@ -52,19 +53,21 @@ services:
       - openproject_network
     volumes:
       - ./database-conf.yml:/app/config/database.yml
-  
-  apache:
-    build:
-      context: .
-      dockerfile: Dockerfile.apache
-    container_name: apache_container
-    restart: always
-    ports:
-      - "80:80"
-    networks:
-      - openproject_network
-    depends_on:
-      - openproject
+      - assets:/app/public/assets
+
+  # apache:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.apache
+  #   container_name: apache_container
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #   networks:
+  #     - openproject_network
+  #   depends_on:
+  #     - openproject
 
 volumes:
   postgres_data:
+  assets:

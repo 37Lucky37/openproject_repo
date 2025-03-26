@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apache-proxy
+  template:
+    metadata:
+      labels:
+        app: apache-proxy
+    spec:
+      #hostNetwork: true  # Працюємо напряму з мережею хоста!
+      #dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: apache-proxy
+          image: 37lucky37/openproject-apache:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache-service
+spec:
+  selector:
+    app: apache-proxy   # має відповідати label з Deployment
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

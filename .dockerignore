@@ -24,12 +24,18 @@ browserslist
 !/docs/api/apiv3/components
 
 # Ignore spec/** folders
-spec/**
+# spec/**
 # Allow factories in case we use lookbook
-!spec/factories
-!spec/factories/**
-!spec/support
-!spec/support/**
+# !spec/factories
+# !spec/factories/**
+# !spec/support
+# !spec/support/**
+# !spec/controllers
+# !spec/httpx_spec.rb
+# !spec/i18n_spec.rb
+# !spec/rails_helper.rb
+# !spec/rspec_helper.rb
+# !spec/spec_helper.rb
 
 extra
 features

@@ -4,7 +4,9 @@ pipeline {
     environment {
         DOCKERHUB_USER = '37lucky37'   
         DOCKERHUB_REPO = 'my-openproject'              
-        IMAGE_TAG = 'latest'                        
+        IMAGE_TAG = 'latest'     
+        POSTGRES_PASSWORD = credentials('postgres_password')
+        SECRET_KEY_BASE = credentials('secret_key_base') 
     }
     
     stages {
@@ -20,9 +22,12 @@ pipeline {
         }
         stage("Start building") {
             steps {
-                sh 'docker compose up openproject -d --build --wait'
-
-                 sh '''
+                sh '''
+                    export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+                    export SECRET_KEY_BASE=$SECRET_KEY_BASE
+                    docker compose up openproject -d --build --wait
+                '''
+                sh '''
                     echo "Waiting for OpenProject to be ready..."
                     until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
                         sleep 20

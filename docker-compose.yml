@@ -11,7 +11,7 @@ services:
     environment:
       POSTGRES_DB: openproject_db
       POSTGRES_USER: openproject_user
-      POSTGRES_PASSWORD: "1234"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     networks:
@@ -35,7 +35,7 @@ services:
     container_name: openproject_app
     restart: always
     environment:
-      SECRET_KEY_BASE: "cf99476b3e3d8c9f1843d20b4cd7f1dc4a5c19c777277bc832c8cb39ce129449bc76f3736dc7d27bb1efdb78e68137663d47ac1e82bb251cddd599777a238505"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       RAILS_ENV: "production"
       MEMCACHE_SERVERS: "memcached:11211"
       OPENPROJECT_HTTPS: "false"

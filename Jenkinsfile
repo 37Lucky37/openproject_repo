@@ -18,21 +18,21 @@ pipeline {
                 '''
             }
         }
-        // stage("Start building") {
-        //     steps {
-        //         sh 'docker compose up openproject -d --build --wait'
+        stage("Start building") {
+            steps {
+                sh 'docker compose up openproject -d --build --wait'
 
-        //          sh '''
-        //             echo "Waiting for OpenProject to be ready..."
-        //             until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
-        //                 sleep 5
-        //             done
-        //         '''
+                 sh '''
+                    echo "Waiting for OpenProject to be ready..."
+                    until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
+                        sleep 20
+                    done
+                '''
               
-        //         sh 'docker compose ps'
-        //         sh 'docker logs openproject_app'
-        //     }
-        // }
+                sh 'docker compose ps'
+                sh 'docker logs openproject_app'
+            }
+        }
 
         stage("Push to Docker Hub") {
             steps {
@@ -48,6 +48,14 @@ pipeline {
 
                     sh 'docker logout'
                 }
+            }
+        }
+
+        stage("Cleanup local images and containers") {
+            steps {
+                sh 'docker compose down --remove-orphans'
+              
+                sh 'docker rmi $DOCKERHUB_USER/$DOCKERHUB_REPO:$IMAGE_TAG || true'
             }
         }
     }

@@ -14,16 +14,6 @@ pipeline {
     }
     
     stages {
-        stage("verify tooling") {
-            steps {
-                sh '''
-                    docker info
-                    docker version
-                    docker compose version
-                    curl --version
-                '''
-            }
-        }
         stage("Start building") {
             steps {
                 sh '''

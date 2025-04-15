@@ -45,6 +45,7 @@ jobs:
         done
         docker compose ps
         docker logs openproject_app
+
         
     - name: Show available images
       run: docker images

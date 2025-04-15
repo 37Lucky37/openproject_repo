@@ -50,11 +50,11 @@ jobs:
     - name: Show available images
       run: docker images
 
-    # - name: Tag and Push to ECR
-    #   run: |
-    #     IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-    #     docker tag openproject_app $IMAGE_URI
-    #     docker push $IMAGE_URI
+    - name: Tag and Push to ECR
+      run: |
+        IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        docker tag openproject_repo-openproject $IMAGE_URI
+        docker push $IMAGE_URI
 
     - name: Cleanup
       run: |

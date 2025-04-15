@@ -3,7 +3,7 @@ production:
   database: openproject_db
   host: postgres
   username: openproject_user
-  password: "1234"
+  password: "G6vb3Le52C"
   encoding: unicode
   pool: 20
 
@@ -12,6 +12,6 @@ test:
   database: openproject_db
   host: postgres
   username: openproject_user
-  password: "1234"
+  password: "G6vb3Le52C"
   encoding: unicode
   pool: 20

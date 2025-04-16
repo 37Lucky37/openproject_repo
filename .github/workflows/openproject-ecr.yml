@@ -55,10 +55,10 @@ jobs:
 
     - name: Start required services and build OpenProject
       run: |
-        run: docker compose up -d
         echo "Waiting for OpenProject to be ready..."
         until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
           echo "Still waiting..."; sleep 20;
+          docker logs openproject_app
         done
         docker compose ps
         docker logs openproject_app
@@ -67,13 +67,13 @@ jobs:
     - name: Show available images
       run: docker images
 
-    - name: Tag and Push to ECR
-      run: |
-        IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-        docker tag openproject_repo-openproject $IMAGE_URI
-        docker push $IMAGE_URI
+    # - name: Tag and Push to ECR
+    #   run: |
+    #     IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+    #     docker tag openproject_repo-openproject $IMAGE_URI
+    #     docker push $IMAGE_URI
 
-    - name: Cleanup
-      run: |
-        docker compose down --remove-orphans
-        docker rmi ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} || true
+    # - name: Cleanup
+    #   run: |
+    #     docker compose down --remove-orphans
+    #     docker rmi ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} || true

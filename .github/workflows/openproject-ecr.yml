@@ -38,7 +38,7 @@ jobs:
 
     - name: Start required services and build OpenProject
       run: |
-        docker compose up -d --build --no-cache
+        docker compose up -d --build
         echo "Waiting for OpenProject to be ready..."
         until docker logs openproject_app 2>&1 | grep -q "CI checks passed successfully!"; do
           echo "Still waiting..."; sleep 20;

@@ -19,12 +19,11 @@ fi
 
 
 if [ "$PRECOMPILE_ASSETS" = "yes" ]; then
-  if [ "$(ls -A /app/public/assets 2>/dev/null)" ]; then
-    echo "Assets already precompiled. Skipping..."
-  else
-    echo "Precompiling assets..."
-    RAILS_ENV=production bundle exec rake assets:precompile
-  fi
+  echo "Precompiling assets..."
+  RAILS_ENV=production bundle exec rake assets:precompile
+  # if [ "$(ls -A /app/public/assets 2>/dev/null)" ]; then
+  #   echo "Assets already precompiled. Skipping..."
+  # else
 else
   echo "Skipping assets precompilation."
 fi

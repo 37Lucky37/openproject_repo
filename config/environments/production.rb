@@ -53,17 +53,17 @@ Rails.application.configure do
 
   # Enable Rails's static asset server when requested
   # Disable serving static files from `public/`, relying on NGINX/Apache to do so instead.
-  config.public_file_server.enabled = true
+  config.public_file_server.enabled = false
 
   # Compress JavaScripts and CSS using a preprocessor.
   config.assets.js_compressor = nil
   # config.assets.css_compressor = :sass
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
-  config.assets.compile = true
+  config.assets.compile = false
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
-  # config.asset_host = "http://assets.example.com"
+  config.asset_host = "https://openproject-assets-kk.s3.us-east-1.amazonaws.com"
 
   # Generate digests for assets URLs.
   config.assets.digest = true
